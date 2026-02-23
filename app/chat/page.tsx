@@ -1,8 +1,8 @@
-// app/agriculture-chat/page.tsx
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Sprout } from 'lucide-react';
+import { Sprout, Send, RotateCcw, ArrowDown, Leaf, Droplets, Bug, Coins, Moon, Sun } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 
 interface ChatMessage {
     id: string;
@@ -20,163 +20,119 @@ interface ApiResponse {
 }
 
 export default function AgricultureChat() {
-    const [messages, setMessages] = useState<ChatMessage[]>([
-        {
-            id: '1',
-            type: 'assistant',
-            content: '🌱 Welcome! I\'m AgriSense AI, your agricultural expert. Ask me anything about crops, farming techniques, soil management, pests, or government schemes. How can I help you today?',
-            timestamp: new Date()
-        }
-    ]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const [suggestedQuestions, setSuggestedQuestions] = useState([
-        "How to increase tomato yield in sandy soil?",
-        "Best crops for low rainfall areas?",
-        "Organic pest control methods?",
-        "When to harvest wheat for maximum yield?",
-        "Government subsidies for drip irrigation?"
-    ]);
+    const [showScrollBtn, setShowScrollBtn] = useState(false);
+    const { dark, toggleTheme, mounted } = useTheme();
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const SUGGESTIONS = [
+        { icon: <Leaf className="w-4 h-4" />, title: "Best crops for my region", desc: "Which crops suit Karnataka's red soil in Kharif season?" },
+        { icon: <Droplets className="w-4 h-4" />, title: "Irrigation optimization", desc: "How to reduce water usage for sugarcane with drip irrigation?" },
+        { icon: <Bug className="w-4 h-4" />, title: "Pest management", desc: "Organic methods to control aphids on tomato plants?" },
+        { icon: <Coins className="w-4 h-4" />, title: "Government schemes", desc: "What subsidies are available for small farmers in India?" },
+    ];
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
+    useEffect(() => { scrollToBottom(); }, [messages, loading]);
 
-    const cleanText = (text: string) => {
-        return text
-            .replace(/##\s*/g, '') // Remove markdown headers
-            .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
-            .replace(/\*(.*?)\*/g, '$1') // Remove italics
-            .replace(/`(.*?)`/g, '$1') // Remove code blocks
-            .replace(/#\s/g, '') // Remove numbered headers
-            .trim();
-    };
+    useEffect(() => {
+        const container = messagesContainerRef.current;
+        if (!container) return;
+        const handleScroll = () => {
+            const { scrollTop, scrollHeight, clientHeight } = container;
+            setShowScrollBtn(scrollHeight - scrollTop - clientHeight > 100);
+        };
+        container.addEventListener('scroll', handleScroll);
+        return () => container.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + 'px';
+        }
+    }, [input]);
 
     const formatAnswer = (text: string) => {
-        // Clean the text first
-        const cleanContent = cleanText(text);
+        const lines = text.split('\n');
+        const elements: JSX.Element[] = [];
+        let i = 0;
 
-        // Split by common section indicators
-        const lines = cleanContent.split('\n').filter(line => line.trim());
-        const sections = [];
-        let currentSection: string[] = [];
+        while (i < lines.length) {
+            const line = lines[i].trim();
+            if (!line) { i++; continue; }
+            if (line === '**' || line === '***') { i++; continue; }
 
-        lines.forEach(line => {
-            const trimmedLine = line.trim();
-
-            // Check if this line starts a new section
-            if (
-                trimmedLine.match(/^\d+\./) || // Numbered items
-                trimmedLine.match(/^[•\-]\s/) || // Bullet points
-                trimmedLine.match(/^[A-Z][^a-z]*:$/) || // Headers like "SOIL PREPARATION:"
-                trimmedLine.toLowerCase().includes('key takeaway') ||
-                trimmedLine.toLowerCase().includes('summary')
-            ) {
-                if (currentSection.length > 0) {
-                    sections.push(currentSection.join('\n'));
-                    currentSection = [];
-                }
+            if (line.match(/^#{1,3}\s+/) || (line.match(/^\*\*[^*]+\*\*$/) && line.length < 80)) {
+                const headingText = line.replace(/^#{1,3}\s+/, '').replace(/\*\*/g, '');
+                elements.push(
+                    <h3 key={i} className={`text-sm font-bold mt-4 mb-1.5 first:mt-0 ${dark ? 'text-gray-100' : 'text-gray-900'}`}>
+                        {headingText}
+                    </h3>
+                );
+                i++; continue;
             }
-            currentSection.push(trimmedLine);
-        });
 
-        if (currentSection.length > 0) {
-            sections.push(currentSection.join('\n'));
-        }
+            if (line.match(/^\d+[.)]\s/)) {
+                const listItems: { num: string; text: string }[] = [];
+                while (i < lines.length && lines[i].trim().match(/^\d+[.)]\s/)) {
+                    const match = lines[i].trim().match(/^(\d+)[.)]\s(.+)/);
+                    if (match) listItems.push({ num: match[1], text: match[2].replace(/\*\*/g, '') });
+                    i++;
+                }
+                elements.push(
+                    <div key={`ol-${i}`} className="space-y-1.5 my-2">
+                        {listItems.map((item, idx) => (
+                            <div key={idx} className="flex gap-2.5 items-start">
+                                <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold mt-0.5 ${dark ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700'}`}>
+                                    {item.num}
+                                </span>
+                                <span className={`text-[13px] leading-relaxed flex-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>{item.text}</span>
+                            </div>
+                        ))}
+                    </div>
+                );
+                continue;
+            }
 
-        // If no clear sections found, return as single paragraph
-        if (sections.length === 0) {
-            return (
-                <p className="text-gray-800 leading-relaxed whitespace-pre-line">
-                    {cleanContent}
+            if (line.match(/^[-•]\s/) || (line.match(/^\*\s/) && !line.match(/^\*\*/))) {
+                const listItems: string[] = [];
+                while (i < lines.length) {
+                    const l = lines[i].trim();
+                    if (l.match(/^[-•]\s/) || (l.match(/^\*\s/) && !l.match(/^\*\*/))) {
+                        listItems.push(l.replace(/^[-•*]\s+/, '').replace(/\*\*/g, ''));
+                        i++;
+                    } else break;
+                }
+                elements.push(
+                    <div key={`ul-${i}`} className="space-y-1 my-2">
+                        {listItems.map((item, idx) => (
+                            <div key={idx} className="flex gap-2 items-start">
+                                <span className="flex-shrink-0 w-1.5 h-1.5 bg-green-500 rounded-full mt-[7px]"></span>
+                                <span className={`text-[13px] leading-relaxed flex-1 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>{item}</span>
+                            </div>
+                        ))}
+                    </div>
+                );
+                continue;
+            }
+
+            const paraText = line.replace(/\*\*/g, '');
+            elements.push(
+                <p key={i} className={`text-[13px] leading-relaxed my-1.5 ${dark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {paraText}
                 </p>
             );
+            i++;
         }
-
-        return sections.map((section, index) => {
-            const sectionText = section.trim();
-
-            // Numbered list section
-            if (sectionText.match(/^\d+\./)) {
-                const items = sectionText.split(/\d+\./).filter(item => item.trim());
-                return (
-                    <div key={index} className="space-y-3 mb-4">
-                        {items.map((item, itemIndex) => (
-                            <div key={itemIndex} className="flex gap-3">
-                                <div className="flex-shrink-0 w-6 h-6 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold mt-1">
-                                    {itemIndex + 1}
-                                </div>
-                                <div className="flex-1">
-                                    <p className="text-gray-800 leading-relaxed">
-                                        {item.trim()}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                );
-            }
-
-            // Bullet points section
-            else if (sectionText.match(/^[•\-]\s/)) {
-                const items = sectionText.split(/[•\-]\s/).filter(item => item.trim());
-                return (
-                    <div key={index} className="space-y-2 mb-4">
-                        {items.map((item, itemIndex) => (
-                            <div key={itemIndex} className="flex gap-3">
-                                <div className="flex-shrink-0 w-2 h-2 bg-green-400 rounded-full mt-3"></div>
-                                <div className="flex-1">
-                                    <p className="text-gray-800 leading-relaxed">
-                                        {item.trim()}
-                                    </p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                );
-            }
-
-            // Key takeaways section
-            else if (sectionText.toLowerCase().includes('key takeaway') || sectionText.toLowerCase().includes('summary')) {
-                const content = sectionText.replace(/key takeaway|summary/gi, '').trim();
-                return (
-                    <div key={index} className="bg-yellow-50 border-l-4 border-yellow-400 p-4 my-4 rounded-r-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                            <strong className="text-yellow-800 text-sm uppercase tracking-wide">
-                                Key Insight
-                            </strong>
-                        </div>
-                        <p className="text-yellow-900 leading-relaxed whitespace-pre-line">
-                            {content}
-                        </p>
-                    </div>
-                );
-            }
-
-            // Section headers (lines ending with colon or all caps)
-            else if (sectionText.match(/:$/) || sectionText === sectionText.toUpperCase()) {
-                return (
-                    <h4 key={index} className="text-lg font-semibold text-green-800 mt-6 mb-3 pb-2 border-b border-green-200">
-                        {sectionText.replace(/:$/, '')}
-                    </h4>
-                );
-            }
-
-            // Regular paragraph
-            else {
-                return (
-                    <p key={index} className="text-gray-800 leading-relaxed mb-4 whitespace-pre-line">
-                        {sectionText}
-                    </p>
-                );
-            }
-        });
+        return elements;
     };
 
     const sendMessage = async (question?: string) => {
@@ -193,16 +149,13 @@ export default function AgricultureChat() {
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setLoading(true);
+        if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
         try {
             const response = await fetch('/api/agriculture-chat', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    question: messageContent
-                }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: messageContent }),
             });
 
             const data: ApiResponse = await response.json();
@@ -215,6 +168,8 @@ export default function AgricultureChat() {
                     timestamp: new Date(data.timestamp)
                 };
                 setMessages(prev => [...prev, assistantMessage]);
+            } else {
+                throw new Error('API returned unsuccessful');
             }
         } catch (error) {
             const errorMessage: ChatMessage = {
@@ -234,187 +189,222 @@ export default function AgricultureChat() {
         sendMessage();
     };
 
-    const handleSuggestionClick = (question: string) => {
-        sendMessage(question);
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    };
+
+    const clearChat = () => { setMessages([]); };
+    const isNewChat = messages.length === 0;
+
+    // ─── Theme tokens ───
+    const t = {
+        bg: dark ? 'bg-[#1e1f2b]' : 'bg-white',
+        headerBg: dark ? 'bg-[#252636]' : 'bg-white',
+        headerBorder: dark ? 'border-[#2e2f42]' : 'border-gray-200/60',
+        inputBg: dark ? 'bg-[#2a2b3d]' : 'bg-gray-50',
+        inputBorder: dark ? 'border-[#3a3b50]' : 'border-gray-200',
+        inputFocusBorder: dark ? 'focus:border-green-500' : 'focus:border-green-400',
+        inputText: dark ? 'text-gray-200' : 'text-gray-800',
+        inputPlaceholder: dark ? 'placeholder-gray-500' : 'placeholder-gray-400',
+        textPrimary: dark ? 'text-gray-100' : 'text-gray-900',
+        textSecondary: dark ? 'text-gray-400' : 'text-gray-500',
+        textMuted: dark ? 'text-gray-500' : 'text-gray-400',
+        userBubble: dark ? 'bg-green-700' : 'bg-green-600',
+        aiBubbleBg: dark ? 'bg-[#282938]' : 'bg-gray-50',
+        aiBubbleBorder: dark ? 'border-[#33344a]' : 'border-gray-100',
+        aiLabel: dark ? 'text-green-400' : 'text-green-700',
+        suggestionBg: dark ? 'bg-[#252636]' : 'bg-white',
+        suggestionBorder: dark ? 'border-[#33344a]' : 'border-gray-200',
+        suggestionHover: dark ? 'hover:bg-[#2e2f42] hover:border-[#444560]' : 'hover:bg-gray-50 hover:border-gray-300',
+        suggestionTitle: dark ? 'text-gray-200' : 'text-gray-800',
+        suggestionDesc: dark ? 'text-gray-500' : 'text-gray-400',
+        suggestionIcon: dark ? 'text-green-400' : 'text-green-600',
+        scrollBtnBg: dark ? 'bg-[#2e2f42] border-[#3a3b50]' : 'bg-white border-gray-200',
+        scrollBtnIcon: dark ? 'text-gray-400' : 'text-gray-500',
+        footerBorder: dark ? 'border-[#2e2f42]' : 'border-gray-100',
+        footerText: dark ? 'text-gray-600' : 'text-gray-400',
+        navActive: dark ? 'text-green-400 bg-green-900/30' : 'text-green-700 bg-green-50',
+        navInactive: dark ? 'text-gray-400 hover:text-green-400 hover:bg-[#2e2f42]' : 'text-gray-500 hover:text-green-700 hover:bg-green-50',
+        clearBtn: dark ? 'text-gray-500 hover:text-gray-300 hover:bg-[#2e2f42]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100',
+        brandText: dark ? 'from-green-400 to-emerald-400' : 'from-green-700 to-emerald-600',
+        themeBtn: dark ? 'bg-[#2e2f42] text-yellow-400 hover:bg-[#3a3b50]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-50">
+        <div className={`h-screen flex flex-col ${t.bg} transition-colors duration-300`}>
             {/* Header */}
-            <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-2 rounded-lg">
-                            <Sprout className="w-6 h-6 text-white" />
+            <header className={`flex-shrink-0 border-b ${t.headerBorder} ${t.headerBg} z-50 transition-colors duration-300`}>
+                <div className="max-w-4xl mx-auto w-full px-4 h-12 flex items-center justify-between">
+                    <a href="/" className="flex items-center gap-2">
+                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-1 rounded-md">
+                            <Sprout className="w-4 h-4 text-white" />
                         </div>
-                        <span className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                            <a href="/">
-                                AgriSense AI
-                            </a>
+                        <span className={`text-sm font-bold bg-gradient-to-r ${t.brandText} bg-clip-text text-transparent`}>
+                            AgriSense AI
                         </span>
-                    </div>
-                    <a
-                        href="/graph"
-                        className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2 rounded-lg font-medium hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl"
-                    >
-                        Get Detailed Crop Analysis
                     </a>
+
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={toggleTheme}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${t.themeBtn}`}
+                            title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+                        >
+                            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        </button>
+
+                        {messages.length > 0 && (
+                            <button
+                                onClick={clearChat}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg transition-colors ${t.clearBtn}`}
+                                title="New chat"
+                            >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">New Chat</span>
+                            </button>
+                        )}
+
+                        <nav className="hidden sm:flex items-center gap-0.5 ml-2">
+                            <a href="/chat" className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg ${t.navActive}`}>Chat</a>
+                            <a href="/graph" className={`px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${t.navInactive}`}>Analysis</a>
+                        </nav>
+
+                        <a href="/graph" className="ml-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-sm">
+                            <span className="hidden sm:inline">Crop Analysis</span>
+                            <span className="sm:hidden">Analysis</span>
+                        </a>
+                    </div>
                 </div>
             </header>
 
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                {/* Suggested Questions */}
-                {messages.length <= 1 && (
-                    <div className="mb-8">
-                        <h2 className="text-lg font-semibold text-gray-800 mb-4 text-center">
-                            Quick Questions to Get Started
-                        </h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {suggestedQuestions.map((question, index) => (
-                                <button
-                                    key={index}
-                                    onClick={() => handleSuggestionClick(question)}
-                                    className="bg-white/80 backdrop-blur-sm border border-green-200 rounded-xl p-4 text-left hover:bg-green-50 hover:border-green-300 transition-all duration-200 group shadow-sm hover:shadow-md"
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center group-hover:bg-green-200 transition-colors">
-                                            <span className="text-green-600 text-sm">💡</span>
+            {/* Main Chat */}
+            <div className="flex-1 flex flex-col min-h-0 max-w-3xl mx-auto w-full">
+                <div ref={messagesContainerRef} className="flex-1 overflow-y-auto">
+                    {isNewChat ? (
+                        <div className="h-full flex flex-col items-center justify-center px-4 py-8">
+                            <div className="text-center mb-8">
+                                <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                    <Sprout className="w-7 h-7 text-white" />
+                                </div>
+                                <h1 className={`text-2xl sm:text-3xl font-bold mb-2 ${t.textPrimary}`}>
+                                    How can I help you today?
+                                </h1>
+                                <p className={`text-sm max-w-md ${t.textSecondary}`}>
+                                    Ask me anything about crops, farming, soil, pests, irrigation, market prices, or government schemes.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full max-w-xl">
+                                {SUGGESTIONS.map((suggestion, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => sendMessage(suggestion.desc)}
+                                        className={`text-left p-3.5 border rounded-xl transition-all group ${t.suggestionBg} ${t.suggestionBorder} ${t.suggestionHover}`}
+                                    >
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className={`${t.suggestionIcon} transition-colors`}>{suggestion.icon}</span>
+                                            <span className={`text-sm font-semibold ${t.suggestionTitle}`}>{suggestion.title}</span>
                                         </div>
-                                        <span className="text-gray-700 text-sm leading-relaxed">{question}</span>
-                                    </div>
-                                </button>
-                            ))}
+                                        <p className={`text-xs leading-relaxed ${t.suggestionDesc}`}>{suggestion.desc}</p>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
+                    ) : (
+                        <div className="px-4 py-4 space-y-1">
+                            {messages.map((message) => (
+                                <div key={message.id}>
+                                    {message.type === 'user' ? (
+                                        <div className="flex justify-end mb-3">
+                                            <div className="max-w-[85%] sm:max-w-[70%]">
+                                                <div className={`${t.userBubble} text-white rounded-2xl rounded-tr-md px-4 py-2.5 shadow-sm`}>
+                                                    <p className="text-[13px] leading-relaxed">{message.content}</p>
+                                                </div>
+                                                <div className={`text-[10px] mt-1 text-right pr-1 ${t.textMuted}`}>
+                                                    {mounted && message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex gap-2.5 mb-4">
+                                            <div className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mt-0.5">
+                                                <Sprout className="w-3.5 h-3.5 text-white" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className={`text-[11px] font-semibold mb-1 ${t.aiLabel}`}>AgriSense AI</div>
+                                                <div className={`rounded-2xl rounded-tl-md px-4 py-3 border ${t.aiBubbleBg} ${t.aiBubbleBorder} transition-colors duration-300`}>
+                                                    {formatAnswer(message.content)}
+                                                </div>
+                                                <div className={`text-[10px] mt-1 pl-1 ${t.textMuted}`}>
+                                                    {mounted && message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {loading && (
+                                <div className="flex gap-2.5 mb-4">
+                                    <div className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                                        <Sprout className="w-3.5 h-3.5 text-white" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className={`text-[11px] font-semibold mb-1 ${t.aiLabel}`}>AgriSense AI</div>
+                                        <div className={`rounded-2xl rounded-tl-md px-4 py-3 border ${t.aiBubbleBg} ${t.aiBubbleBorder}`}>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex space-x-1">
+                                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce"></div>
+                                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
+                                                </div>
+                                                <span className={`text-xs ${t.textMuted}`}>Thinking...</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div ref={messagesEndRef} />
+                        </div>
+                    )}
+                </div>
+
+                {showScrollBtn && (
+                    <div className="flex justify-center -mt-10 mb-2 pointer-events-none relative z-10">
+                        <button onClick={scrollToBottom} className={`pointer-events-auto w-8 h-8 border rounded-full shadow-md flex items-center justify-center transition-colors ${t.scrollBtnBg}`}>
+                            <ArrowDown className={`w-4 h-4 ${t.scrollBtnIcon}`} />
+                        </button>
                     </div>
                 )}
 
-                {/* Chat Container */}
-                <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-green-100 overflow-hidden mb-6">
-                    {/* Messages Area */}
-                    <div className="h-[60vh] overflow-y-auto p-6 space-y-6">
-                        {messages.map((message) => (
-                            <div
-                                key={message.id}
-                                className={`flex gap-4 ${message.type === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
-                            >
-                                {/* Avatar */}
-                                <div className={`flex-shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center shadow-md ${message.type === 'user'
-                                    ? 'bg-gradient-to-r from-blue-500 to-cyan-500'
-                                    : 'bg-gradient-to-r from-green-500 to-emerald-500'
-                                    }`}>
-                                    <span className="text-white text-sm">
-                                        {message.type === 'user' ? '👤' : '🌱'}
-                                    </span>
-                                </div>
-
-                                {/* Message Bubble */}
-                                <div className={`flex-1 max-w-[80%] ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
-                                    <div className={`inline-block rounded-3xl p-5 shadow-sm ${message.type === 'user'
-                                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white'
-                                        : 'bg-gray-50 border border-green-100 text-gray-800'
-                                        }`}>
-                                        {message.type === 'assistant' ? (
-                                            <div className="space-y-3">
-                                                {formatAnswer(message.content)}
-                                            </div>
-                                        ) : (
-                                            <p className="leading-relaxed">{message.content}</p>
-                                        )}
-                                    </div>
-
-                                    {/* Timestamp */}
-                                    <div className={`text-xs text-gray-500 mt-2 ${message.type === 'user' ? 'text-right' : 'text-left'}`}>
-                                        {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-
-                        {/* Loading Indicator */}
-                        {loading && (
-                            <div className="flex gap-4">
-                                <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-md">
-                                    <span className="text-white text-sm">🌱</span>
-                                </div>
-                                <div className="flex-1 max-w-[80%]">
-                                    <div className="bg-gray-50 border border-green-100 rounded-3xl p-5 shadow-sm">
-                                        <div className="flex items-center gap-3 text-gray-600">
-                                            <div className="flex space-x-1">
-                                                <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce"></div>
-                                                <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                                <div className="w-2 h-2 bg-green-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                            </div>
-                                            <span className="text-sm font-medium">AgriSense AI is thinking...</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        <div ref={messagesEndRef} />
-                    </div>
-
-                    {/* Input Area */}
-                    <div className="border-t border-green-100 bg-white/60 p-6">
-                        <form onSubmit={handleSubmit} className="flex gap-3">
-                            <div className="flex-1 relative">
-                                <input
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Ask about crops, soil, pests, irrigation, subsidies..."
-                                    className="w-full px-6 py-4 bg-white border border-green-200 rounded-2xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none shadow-sm pr-24 text-gray-800 placeholder-gray-500"
-                                    disabled={loading}
-                                />
-                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setInput('')}
-                                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
-                                    >
-                                        ✕
-                                    </button>
-                                    <div className="w-px h-6 bg-gray-300"></div>
-                                    <button
-                                        type="submit"
-                                        disabled={loading || !input.trim()}
-                                        className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center text-white shadow-md hover:shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
-
-                        {/* Quick Actions */}
-                        <div className="flex flex-wrap gap-2 mt-4 justify-center">
-                            {['Soil Testing', 'Pest Control', 'Irrigation', 'Organic Farming'].map((topic) => (
-                                <button
-                                    key={topic}
-                                    onClick={() => setInput(`Tell me about ${topic.toLowerCase()}...`)}
-                                    className="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium hover:bg-green-200 transition-colors border border-green-200"
-                                >
-                                    {topic}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Features Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    {[
-                        { icon: '🔬', label: 'Scientific Accuracy' },
-                        { icon: '💧', label: 'Water Management' },
-                        { icon: '🌾', label: 'Crop Science' },
-                        { icon: '💰', label: 'Cost Analysis' }
-                    ].map((feature, index) => (
-                        <div key={index} className="bg-white/60 backdrop-blur-sm rounded-2xl p-4 border border-green-100 shadow-sm">
-                            <div className="text-2xl mb-2">{feature.icon}</div>
-                            <div className="text-sm text-gray-700 font-medium">{feature.label}</div>
-                        </div>
-                    ))}
+                {/* Input Area — Fixed overlap: send button is outside textarea, in a flex row */}
+                <div className={`flex-shrink-0 border-t ${t.footerBorder} ${t.headerBg} px-4 py-3 transition-colors duration-300`}>
+                    <form onSubmit={handleSubmit} className="flex items-end gap-2">
+                        <textarea
+                            ref={textareaRef}
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder="Ask anything about agriculture..."
+                            rows={1}
+                            className={`flex-1 resize-none px-4 py-3 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 outline-none transition-all duration-300 ${t.inputBg} ${t.inputBorder} ${t.inputFocusBorder} ${t.inputText} ${t.inputPlaceholder}`}
+                            disabled={loading}
+                        />
+                        <button
+                            type="submit"
+                            disabled={loading || !input.trim()}
+                            className="flex-shrink-0 w-10 h-10 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 rounded-xl flex items-center justify-center text-white transition-all disabled:cursor-not-allowed shadow-sm"
+                        >
+                            <Send className="w-4 h-4" />
+                        </button>
+                    </form>
+                    <p className={`text-center text-[10px] mt-2 ${t.footerText}`}>
+                        AgriSense AI can make mistakes. Verify important farming decisions with local experts.
+                    </p>
                 </div>
             </div>
         </div>
