@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Sprout, Send, RotateCcw, ArrowDown, Leaf, Droplets, Bug, Coins, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
+import { useLanguage } from '@/context/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 interface ChatMessage {
     id: string;
@@ -25,13 +27,14 @@ export default function AgricultureChat() {
     const [loading, setLoading] = useState(false);
     const [showScrollBtn, setShowScrollBtn] = useState(false);
     const { dark, toggleTheme, mounted } = useTheme();
+    const { t, language } = useLanguage();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const SUGGESTIONS = [
-        { icon: <Leaf className="w-4 h-4" />, title: "Best crops for my region", desc: "Which crops suit Karnataka's red soil in Kharif season?" },
-        { icon: <Droplets className="w-4 h-4" />, title: "Irrigation optimization", desc: "How to reduce water usage for sugarcane with drip irrigation?" },
+        { icon: <Leaf className="w-4 h-4" />, title: t.features.location.title, desc: t.prevCropPlaceholder },
+        { icon: <Droplets className="w-4 h-4" />, title: t.waterSource, desc: "How to reduce water usage for sugarcane with drip irrigation?" },
         { icon: <Bug className="w-4 h-4" />, title: "Pest management", desc: "Organic methods to control aphids on tomato plants?" },
         { icon: <Coins className="w-4 h-4" />, title: "Government schemes", desc: "What subsidies are available for small farmers in India?" },
     ];
@@ -155,7 +158,10 @@ export default function AgricultureChat() {
             const response = await fetch('/api/agriculture-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: messageContent }),
+                body: JSON.stringify({
+                    question: messageContent,
+                    language: language // Pass language preference to AI
+                }),
             });
 
             const data: ApiResponse = await response.json();
@@ -175,7 +181,7 @@ export default function AgricultureChat() {
             const errorMessage: ChatMessage = {
                 id: (Date.now() + 1).toString(),
                 type: 'assistant',
-                content: 'Sorry, I encountered an error while processing your question. Please try again.',
+                content: 'Sorry, I encountered an error. Please try again.',
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, errorMessage]);
@@ -200,7 +206,7 @@ export default function AgricultureChat() {
     const isNewChat = messages.length === 0;
 
     // ─── Theme tokens ───
-    const t = {
+    const theme = {
         bg: dark ? 'bg-[#1e1f2b]' : 'bg-white',
         headerBg: dark ? 'bg-[#252636]' : 'bg-white',
         headerBorder: dark ? 'border-[#2e2f42]' : 'border-gray-200/60',
@@ -234,23 +240,24 @@ export default function AgricultureChat() {
     };
 
     return (
-        <div className={`h-screen flex flex-col ${t.bg} transition-colors duration-300`}>
+        <div className={`h-screen flex flex-col ${theme.bg} transition-colors duration-300`}>
             {/* Header */}
-            <header className={`flex-shrink-0 border-b ${t.headerBorder} ${t.headerBg} z-50 transition-colors duration-300`}>
-                <div className="max-w-4xl mx-auto w-full px-4 h-12 flex items-center justify-between">
+            <header className={`flex-shrink-0 border-b ${theme.headerBorder} ${theme.headerBg} z-50 transition-colors duration-300`}>
+                <div className="max-w-4xl mx-auto w-full px-4 h-14 flex items-center justify-between">
                     <a href="/" className="flex items-center gap-2">
                         <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-1 rounded-md">
                             <Sprout className="w-4 h-4 text-white" />
                         </div>
-                        <span className={`text-sm font-bold bg-gradient-to-r ${t.brandText} bg-clip-text text-transparent`}>
-                            AgriSense AI
+                        <span className={`text-sm font-bold bg-gradient-to-r ${theme.brandText} bg-clip-text text-transparent`}>
+                            {t.title}
                         </span>
                     </a>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
+                        <LanguageSwitcher dark={dark} />
                         <button
                             onClick={toggleTheme}
-                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${t.themeBtn}`}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${theme.themeBtn}`}
                             title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
                         >
                             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -259,23 +266,18 @@ export default function AgricultureChat() {
                         {messages.length > 0 && (
                             <button
                                 onClick={clearChat}
-                                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg transition-colors ${t.clearBtn}`}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg transition-colors ${theme.clearBtn}`}
                                 title="New chat"
                             >
                                 <RotateCcw className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">New Chat</span>
+                                <span className="hidden sm:inline">{t.newChat}</span>
                             </button>
                         )}
 
-                        <nav className="hidden sm:flex items-center gap-0.5 ml-2">
-                            <a href="/chat" className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg ${t.navActive}`}>Chat</a>
-                            <a href="/graph" className={`px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${t.navInactive}`}>Analysis</a>
+                        <nav className="hidden sm:flex items-center gap-0.5 ml-1">
+                            <a href="/chat" className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg ${theme.navActive}`}>{t.chat}</a>
+                            <a href="/graph" className={`px-2.5 py-1.5 text-xs font-medium rounded-lg transition-colors ${theme.navInactive}`}>{t.analysis}</a>
                         </nav>
-
-                        <a href="/graph" className="ml-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-sm">
-                            <span className="hidden sm:inline">Crop Analysis</span>
-                            <span className="sm:hidden">Analysis</span>
-                        </a>
                     </div>
                 </div>
             </header>
@@ -289,11 +291,11 @@ export default function AgricultureChat() {
                                 <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                                     <Sprout className="w-7 h-7 text-white" />
                                 </div>
-                                <h1 className={`text-2xl sm:text-3xl font-bold mb-2 ${t.textPrimary}`}>
-                                    How can I help you today?
+                                <h1 className={`text-2xl sm:text-3xl font-bold mb-2 ${theme.textPrimary}`}>
+                                    {t.howCanIHelp}
                                 </h1>
-                                <p className={`text-sm max-w-md ${t.textSecondary}`}>
-                                    Ask me anything about crops, farming, soil, pests, irrigation, market prices, or government schemes.
+                                <p className={`text-sm max-w-md ${theme.textSecondary}`}>
+                                    {t.chatDesc}
                                 </p>
                             </div>
 
@@ -302,13 +304,13 @@ export default function AgricultureChat() {
                                     <button
                                         key={index}
                                         onClick={() => sendMessage(suggestion.desc)}
-                                        className={`text-left p-3.5 border rounded-xl transition-all group ${t.suggestionBg} ${t.suggestionBorder} ${t.suggestionHover}`}
+                                        className={`text-left p-3.5 border rounded-xl transition-all group ${theme.suggestionBg} ${theme.suggestionBorder} ${theme.suggestionHover}`}
                                     >
                                         <div className="flex items-center gap-2 mb-1">
-                                            <span className={`${t.suggestionIcon} transition-colors`}>{suggestion.icon}</span>
-                                            <span className={`text-sm font-semibold ${t.suggestionTitle}`}>{suggestion.title}</span>
+                                            <span className={`${theme.suggestionIcon} transition-colors`}>{suggestion.icon}</span>
+                                            <span className={`text-sm font-semibold ${theme.suggestionTitle}`}>{suggestion.title}</span>
                                         </div>
-                                        <p className={`text-xs leading-relaxed ${t.suggestionDesc}`}>{suggestion.desc}</p>
+                                        <p className={`text-xs leading-relaxed ${theme.suggestionDesc}`}>{suggestion.desc}</p>
                                     </button>
                                 ))}
                             </div>
@@ -320,10 +322,10 @@ export default function AgricultureChat() {
                                     {message.type === 'user' ? (
                                         <div className="flex justify-end mb-3">
                                             <div className="max-w-[85%] sm:max-w-[70%]">
-                                                <div className={`${t.userBubble} text-white rounded-2xl rounded-tr-md px-4 py-2.5 shadow-sm`}>
+                                                <div className={`${theme.userBubble} text-white rounded-2xl rounded-tr-md px-4 py-2.5 shadow-sm`}>
                                                     <p className="text-[13px] leading-relaxed">{message.content}</p>
                                                 </div>
-                                                <div className={`text-[10px] mt-1 text-right pr-1 ${t.textMuted}`}>
+                                                <div className={`text-[10px] mt-1 text-right pr-1 ${theme.textMuted}`}>
                                                     {mounted && message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </div>
@@ -334,11 +336,11 @@ export default function AgricultureChat() {
                                                 <Sprout className="w-3.5 h-3.5 text-white" />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className={`text-[11px] font-semibold mb-1 ${t.aiLabel}`}>AgriSense AI</div>
-                                                <div className={`rounded-2xl rounded-tl-md px-4 py-3 border ${t.aiBubbleBg} ${t.aiBubbleBorder} transition-colors duration-300`}>
+                                                <div className={`text-[11px] font-semibold mb-1 ${theme.aiLabel}`}>{t.title}</div>
+                                                <div className={`rounded-2xl rounded-tl-md px-4 py-3 border ${theme.aiBubbleBg} ${theme.aiBubbleBorder} transition-colors duration-300`}>
                                                     {formatAnswer(message.content)}
                                                 </div>
-                                                <div className={`text-[10px] mt-1 pl-1 ${t.textMuted}`}>
+                                                <div className={`text-[10px] mt-1 pl-1 ${theme.textMuted}`}>
                                                     {mounted && message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </div>
                                             </div>
@@ -353,15 +355,15 @@ export default function AgricultureChat() {
                                         <Sprout className="w-3.5 h-3.5 text-white" />
                                     </div>
                                     <div className="flex-1">
-                                        <div className={`text-[11px] font-semibold mb-1 ${t.aiLabel}`}>AgriSense AI</div>
-                                        <div className={`rounded-2xl rounded-tl-md px-4 py-3 border ${t.aiBubbleBg} ${t.aiBubbleBorder}`}>
+                                        <div className={`text-[11px] font-semibold mb-1 ${theme.aiLabel}`}>{t.title}</div>
+                                        <div className={`rounded-2xl rounded-tl-md px-4 py-3 border ${theme.aiBubbleBg} ${theme.aiBubbleBorder}`}>
                                             <div className="flex items-center gap-2">
                                                 <div className="flex space-x-1">
                                                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce"></div>
                                                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
                                                     <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
                                                 </div>
-                                                <span className={`text-xs ${t.textMuted}`}>Thinking...</span>
+                                                <span className={`text-xs ${theme.textMuted}`}>{t.thinking}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -375,14 +377,14 @@ export default function AgricultureChat() {
 
                 {showScrollBtn && (
                     <div className="flex justify-center -mt-10 mb-2 pointer-events-none relative z-10">
-                        <button onClick={scrollToBottom} className={`pointer-events-auto w-8 h-8 border rounded-full shadow-md flex items-center justify-center transition-colors ${t.scrollBtnBg}`}>
-                            <ArrowDown className={`w-4 h-4 ${t.scrollBtnIcon}`} />
+                        <button onClick={scrollToBottom} className={`pointer-events-auto w-8 h-8 border rounded-full shadow-md flex items-center justify-center transition-colors ${theme.scrollBtnBg}`}>
+                            <ArrowDown className={`w-4 h-4 ${theme.scrollBtnIcon}`} />
                         </button>
                     </div>
                 )}
 
-                {/* Input Area — Fixed overlap: send button is outside textarea, in a flex row */}
-                <div className={`flex-shrink-0 border-t ${t.footerBorder} ${t.headerBg} px-4 py-3 transition-colors duration-300`}>
+                {/* Input Area */}
+                <div className={`flex-shrink-0 border-t ${theme.footerBorder} ${theme.headerBg} px-4 py-3 transition-colors duration-300`}>
                     <form onSubmit={handleSubmit} className="flex items-end gap-2">
                         <textarea
                             ref={textareaRef}
@@ -391,7 +393,7 @@ export default function AgricultureChat() {
                             onKeyDown={handleKeyDown}
                             placeholder="Ask anything about agriculture..."
                             rows={1}
-                            className={`flex-1 resize-none px-4 py-3 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 outline-none transition-all duration-300 ${t.inputBg} ${t.inputBorder} ${t.inputFocusBorder} ${t.inputText} ${t.inputPlaceholder}`}
+                            className={`flex-1 resize-none px-4 py-3 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 outline-none transition-all duration-300 ${theme.inputBg} ${theme.inputBorder} ${theme.inputFocusBorder} ${theme.inputText} ${theme.inputPlaceholder}`}
                             disabled={loading}
                         />
                         <button
@@ -402,8 +404,8 @@ export default function AgricultureChat() {
                             <Send className="w-4 h-4" />
                         </button>
                     </form>
-                    <p className={`text-center text-[10px] mt-2 ${t.footerText}`}>
-                        AgriSense AI can make mistakes. Verify important farming decisions with local experts.
+                    <p className={`text-center text-[10px] mt-2 ${theme.footerText}`}>
+                        {t.footerWarning}
                     </p>
                 </div>
             </div>

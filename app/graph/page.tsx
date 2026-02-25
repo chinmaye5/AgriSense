@@ -7,6 +7,9 @@ import {
 } from 'recharts';
 import { Sprout, Droplets, TrendingUp, DollarSign, Package, AlertCircle, Info, Leaf, Sun, CloudRain, ChevronRight, Zap, BarChart3, ArrowRight, Moon } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
+import { useLanguage } from '@/context/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { translations } from '@/lib/translations';
 
 
 interface Recommendation {
@@ -49,6 +52,7 @@ function getCropEmoji(crop: string) {
 
 export default function CropAnalyzerDashboard() {
     const { dark, toggleTheme } = useTheme();
+    const { t, language } = useLanguage();
     const d = dark;
     const [formData, setFormData] = useState({
         location: '',
@@ -65,19 +69,19 @@ export default function CropAnalyzerDashboard() {
     const [selectedCrop, setSelectedCrop] = useState<number>(0);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-    const SOIL_TYPES = ['Black (Regur)', 'Red Soil', 'Alluvial', 'Sandy', 'Laterite', 'Clay', 'Loamy', 'Sandy Loam'];
-    const WATER_SOURCES = ['Borewell', 'Canal Irrigation', 'Rain-fed Only', 'River/Stream', 'Drip Irrigation', 'Sprinkler', 'Tank/Pond'];
-    const SEASONS = ['Kharif (Jun–Oct)', 'Rabi (Nov–Mar)', 'Zaid/Summer (Mar–Jun)', 'Year-round'];
+    const SOIL_TYPES = Object.keys(t.soils);
+    const WATER_SOURCES = Object.keys(t.waterSources);
+    const SEASONS = Object.keys(t.seasonsList);
 
     const validateForm = (): boolean => {
         const errors: Record<string, string> = {};
 
-        if (!formData.location.trim()) errors.location = 'Location is required';
-        if (!formData.size || parseFloat(formData.size) <= 0) errors.size = 'Enter a valid land size';
-        if (!formData.budget || parseFloat(formData.budget) <= 0) errors.budget = 'Enter a valid budget';
-        if (!formData.soil_type) errors.soil_type = 'Select your soil type';
-        if (!formData.water_source) errors.water_source = 'Select water source';
-        if (!formData.season) errors.season = 'Select the planting season';
+        if (!formData.location.trim()) errors.location = t.errorMessages.location;
+        if (!formData.size || parseFloat(formData.size) <= 0) errors.size = t.errorMessages.landSize;
+        if (!formData.budget || parseFloat(formData.budget) <= 0) errors.budget = t.errorMessages.budget;
+        if (!formData.soil_type) errors.soil_type = t.errorMessages.soil;
+        if (!formData.water_source) errors.water_source = t.errorMessages.water;
+        if (!formData.season) errors.season = t.errorMessages.season;
 
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
@@ -103,7 +107,8 @@ export default function CropAnalyzerDashboard() {
                     budget: parseFloat(formData.budget),
                     soil_type: formData.soil_type,
                     water_source: formData.water_source,
-                    season: formData.season
+                    season: formData.season,
+                    language: language
                 }),
             });
 
@@ -221,16 +226,17 @@ export default function CropAnalyzerDashboard() {
                         </span>
                     </a>
                     <div className="flex items-center gap-2 sm:gap-4">
+                        <LanguageSwitcher dark={d} />
                         <button onClick={toggleTheme} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${d ? 'bg-[#2e2f42] text-yellow-400 hover:bg-[#3a3b50]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`} title={d ? 'Light mode' : 'Dark mode'}>
                             {d ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </button>
                         <nav className="hidden sm:flex items-center gap-1">
-                            <a href="/chat" className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${d ? 'text-gray-400 hover:text-green-400 hover:bg-[#2e2f42]' : 'text-gray-600 hover:text-green-700 hover:bg-green-50'}`}>Chat</a>
-                            <a href="/graph" className={`px-3 py-1.5 text-sm font-semibold rounded-lg ${d ? 'text-green-400 bg-green-900/30' : 'text-green-700 bg-green-50'}`}>Analysis</a>
+                            <a href="/chat" className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${d ? 'text-gray-400 hover:text-green-400 hover:bg-[#2e2f42]' : 'text-gray-600 hover:text-green-700 hover:bg-green-50'}`}>{t.chat}</a>
+                            <a href="/graph" className={`px-3 py-1.5 text-sm font-semibold rounded-lg ${d ? 'text-green-400 bg-green-900/30' : 'text-green-700 bg-green-50'}`}>{t.analysis}</a>
                         </nav>
                         <a href="/chat" className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-sm hover:shadow-md flex items-center gap-1.5">
                             <Zap className="w-3.5 h-3.5" />
-                            <span className="hidden sm:inline">Ask AI</span>
+                            <span className="hidden sm:inline">{t.askAi}</span>
                         </a>
                     </div>
                 </div>
@@ -247,20 +253,19 @@ export default function CropAnalyzerDashboard() {
                     <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-6 border transition-all ${d ? 'bg-green-900/30 border-green-500/30 text-green-400' : 'bg-green-100 border-green-200 text-green-700'
                         }`}>
                         <BarChart3 className="w-3.5 h-3.5" />
-                        AI-Powered Crop Intelligence
+                        {t.features.roi.title}
                     </div>
 
                     <h1 className={`text-4xl sm:text-6xl font-black tracking-tight mb-4 transition-colors ${d ? 'text-white' : 'text-gray-900'}`}>
-                        Smart <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">Crop Analysis</span>
+                        {t.features.soil.title.split(' ')[0]} <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">{t.analysis}</span>
                     </h1>
 
                     <p className={`text-sm sm:text-lg max-w-2xl mx-auto leading-relaxed mb-8 transition-colors ${d ? 'text-gray-400' : 'text-gray-600'}`}>
-                        Unlock data-driven insights for your farm using weather intelligence,
-                        soil profiles, and historical records powered by advanced AI.
+                        {t.chatDesc}
                     </p>
 
                     <div className="flex flex-wrap items-center justify-center gap-2.5">
-                        {['Weather Aware', 'Soil Analysis', 'ROI Forecast', 'AI Insights'].map((f) => (
+                        {[t.features.weather.title, t.features.soil.title, t.features.roi.title, t.features.location.title].map((f) => (
                             <span key={f} className={`px-4 py-1.5 rounded-xl text-xs font-bold border transition-all ${d ? 'bg-[#252636] border-[#33344a] text-gray-400' : 'bg-white border-green-100 text-green-700 shadow-sm'
                                 }`}>
                                 {f}
@@ -279,8 +284,8 @@ export default function CropAnalyzerDashboard() {
                             <Info className={`w-4 h-4 ${d ? 'text-green-400' : 'text-green-700'}`} />
                         </div>
                         <div>
-                            <h2 className={`text-lg font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>Farm Details</h2>
-                            <p className={`text-xs ${d ? 'text-gray-500' : 'text-gray-500'}`}>Enter your farm info for personalized recommendations</p>
+                            <h2 className={`text-lg font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>{t.farmDetails}</h2>
+                            <p className={`text-xs ${d ? 'text-gray-500' : 'text-gray-500'}`}>{t.chatDesc}</p>
                         </div>
                     </div>
 
@@ -290,14 +295,14 @@ export default function CropAnalyzerDashboard() {
                             <div className="space-y-1.5">
                                 <label className={`flex items-center gap-1.5 text-sm font-semibold ${d ? 'text-gray-300' : 'text-gray-700'}`}>
                                     <Sun className="w-3.5 h-3.5 text-orange-500" />
-                                    Location <span className="text-red-400">*</span>
+                                    {t.location} <span className="text-red-400">*</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="location"
                                     value={formData.location}
                                     onChange={handleChange}
-                                    placeholder="e.g., Shivamogga, Karnataka"
+                                    placeholder={t.locationPlaceholder}
                                     className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all ${d ? 'bg-[#2a2b3d] border-[#3a3b50] text-gray-200 placeholder-gray-500' : 'bg-gray-50/50 hover:bg-white'} ${validationErrors.location ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
                                         }`}
                                 />
@@ -307,7 +312,7 @@ export default function CropAnalyzerDashboard() {
                             <div className="space-y-1.5">
                                 <label className={`flex items-center gap-1.5 text-sm font-semibold ${d ? 'text-gray-300' : 'text-gray-700'}`}>
                                     <Package className="w-3.5 h-3.5 text-blue-500" />
-                                    Land Size (acres) <span className="text-red-400">*</span>
+                                    {t.landSize} <span className="text-red-400">*</span>
                                 </label>
                                 <input
                                     type="number"
@@ -326,7 +331,7 @@ export default function CropAnalyzerDashboard() {
                             <div className="space-y-1.5">
                                 <label className={`flex items-center gap-1.5 text-sm font-semibold ${d ? 'text-gray-300' : 'text-gray-700'}`}>
                                     <DollarSign className="w-3.5 h-3.5 text-yellow-500" />
-                                    Budget (₹) <span className="text-red-400">*</span>
+                                    {t.budget} <span className="text-red-400">*</span>
                                 </label>
                                 <input
                                     type="number"
@@ -346,7 +351,7 @@ export default function CropAnalyzerDashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="space-y-1.5">
                                 <label className={`flex items-center gap-1.5 text-sm font-semibold ${d ? 'text-gray-300' : 'text-gray-700'}`}>
-                                    🪨 Soil Type <span className="text-red-400">*</span>
+                                    🪨 {t.soilType} <span className="text-red-400">*</span>
                                 </label>
                                 <select
                                     name="soil_type"
@@ -355,8 +360,12 @@ export default function CropAnalyzerDashboard() {
                                     className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all appearance-none cursor-pointer ${d ? 'bg-[#2a2b3d] border-[#3a3b50] text-gray-200' : 'bg-gray-50/50 hover:bg-white'} ${validationErrors.soil_type ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
                                         }`}
                                 >
-                                    <option value="">Select soil type...</option>
-                                    {SOIL_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
+                                    <option value="">{t.selectSoil}</option>
+                                    {SOIL_TYPES.map(s => (
+                                        <option key={s} value={translations.en.soils[s as keyof typeof translations.en.soils]}>
+                                            {t.soils[s as keyof typeof t.soils]}
+                                        </option>
+                                    ))}
                                 </select>
                                 {validationErrors.soil_type && <p className="text-[11px] text-red-500 font-medium">{validationErrors.soil_type}</p>}
                             </div>
@@ -364,7 +373,7 @@ export default function CropAnalyzerDashboard() {
                             <div className="space-y-1.5">
                                 <label className={`flex items-center gap-1.5 text-sm font-semibold ${d ? 'text-gray-300' : 'text-gray-700'}`}>
                                     <Droplets className="w-3.5 h-3.5 text-cyan-500" />
-                                    Water Source <span className="text-red-400">*</span>
+                                    {t.waterSource} <span className="text-red-400">*</span>
                                 </label>
                                 <select
                                     name="water_source"
@@ -373,8 +382,12 @@ export default function CropAnalyzerDashboard() {
                                     className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all appearance-none cursor-pointer ${d ? 'bg-[#2a2b3d] border-[#3a3b50] text-gray-200' : 'bg-gray-50/50 hover:bg-white'} ${validationErrors.water_source ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
                                         }`}
                                 >
-                                    <option value="">Select water source...</option>
-                                    {WATER_SOURCES.map(w => <option key={w} value={w}>{w}</option>)}
+                                    <option value="">{t.selectWater}</option>
+                                    {WATER_SOURCES.map(w => (
+                                        <option key={w} value={translations.en.waterSources[w as keyof typeof translations.en.waterSources]}>
+                                            {t.waterSources[w as keyof typeof t.waterSources]}
+                                        </option>
+                                    ))}
                                 </select>
                                 {validationErrors.water_source && <p className="text-[11px] text-red-500 font-medium">{validationErrors.water_source}</p>}
                             </div>
@@ -382,7 +395,7 @@ export default function CropAnalyzerDashboard() {
                             <div className="space-y-1.5">
                                 <label className={`flex items-center gap-1.5 text-sm font-semibold ${d ? 'text-gray-300' : 'text-gray-700'}`}>
                                     <CloudRain className="w-3.5 h-3.5 text-indigo-500" />
-                                    Season <span className="text-red-400">*</span>
+                                    {t.season} <span className="text-red-400">*</span>
                                 </label>
                                 <select
                                     name="season"
@@ -391,8 +404,12 @@ export default function CropAnalyzerDashboard() {
                                     className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all appearance-none cursor-pointer ${d ? 'bg-[#2a2b3d] border-[#3a3b50] text-gray-200' : 'bg-gray-50/50 hover:bg-white'} ${validationErrors.season ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
                                         }`}
                                 >
-                                    <option value="">Select season...</option>
-                                    {SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
+                                    <option value="">{t.selectSeason}</option>
+                                    {SEASONS.map(s => (
+                                        <option key={s} value={translations.en.seasonsList[s as keyof typeof translations.en.seasonsList]}>
+                                            {t.seasonsList[s as keyof typeof t.seasonsList]}
+                                        </option>
+                                    ))}
                                 </select>
                                 {validationErrors.season && <p className="text-[11px] text-red-500 font-medium">{validationErrors.season}</p>}
                             </div>
@@ -403,14 +420,14 @@ export default function CropAnalyzerDashboard() {
                             <div className="space-y-1.5">
                                 <label className={`flex items-center gap-1.5 text-sm font-semibold ${d ? 'text-gray-300' : 'text-gray-700'}`}>
                                     <Leaf className="w-3.5 h-3.5 text-green-500" />
-                                    Previous Crop <span className="text-gray-400 text-xs font-normal">(optional)</span>
+                                    {t.prevCrop} <span className="text-gray-400 text-xs font-normal">(optional)</span>
                                 </label>
                                 <input
                                     type="text"
                                     name="previously_grown"
                                     value={formData.previously_grown}
                                     onChange={handleChange}
-                                    placeholder="e.g., rice, wheat"
+                                    placeholder={t.prevCropPlaceholder}
                                     className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all ${d ? 'bg-[#2a2b3d] border-[#3a3b50] text-gray-200 placeholder-gray-500' : 'bg-gray-50/50 hover:bg-white border-gray-200'}`}
                                 />
                             </div>
@@ -424,12 +441,12 @@ export default function CropAnalyzerDashboard() {
                             {loading ? (
                                 <>
                                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    Analyzing Weather, Soil & Historical Data...
+                                    {t.analyzing}
                                 </>
                             ) : (
                                 <>
                                     <TrendingUp className="w-4 h-4" />
-                                    Generate AI Recommendations
+                                    {t.generate}
                                     <ArrowRight className="w-4 h-4" />
                                 </>
                             )}
@@ -453,7 +470,7 @@ export default function CropAnalyzerDashboard() {
                         <section>
                             <div className="flex items-center gap-2 mb-4">
                                 <Sprout className={`w-5 h-5 ${d ? 'text-green-400' : 'text-green-600'}`} />
-                                <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>Top Recommended Crops</h2>
+                                <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>{t.results}</h2>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                                 {result.recommendations.map((rec, index) => {
@@ -486,15 +503,15 @@ export default function CropAnalyzerDashboard() {
 
                                             <div className="grid grid-cols-2 gap-2 relative z-10">
                                                 <div className={`p-2 rounded-xl border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-blue-500/10' : 'bg-blue-50/50 border-blue-100'}`}>
-                                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-0.5">Yield</p>
+                                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-0.5">{t.yield}</p>
                                                     <p className={`text-xs font-black ${d ? 'text-blue-400' : 'text-blue-700'}`}>{rec.expected_output_kg.toLocaleString()} kg</p>
                                                 </div>
                                                 <div className={`p-2 rounded-xl border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-amber-500/10' : 'bg-amber-50/50 border-amber-100'}`}>
-                                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-0.5">Budget</p>
+                                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-0.5">{t.budget}</p>
                                                     <p className={`text-xs font-black ${d ? 'text-amber-500' : 'text-amber-700'}`}>₹{rec.estimated_budget_needed_rs.toLocaleString()}</p>
                                                 </div>
                                                 <div className={`p-2 rounded-xl border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-green-500/10' : 'bg-green-50/50 border-green-100'}`}>
-                                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-0.5">Profit</p>
+                                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-0.5">{t.profit}</p>
                                                     <p className={`text-xs font-black ${d ? 'text-green-400' : 'text-green-700'}`}>₹{rec.expected_profit_range_rs[0].toLocaleString()}</p>
                                                 </div>
                                                 <div className={`p-2 rounded-xl border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-purple-500/10' : 'bg-purple-50/50 border-purple-100'}`}>
@@ -505,7 +522,7 @@ export default function CropAnalyzerDashboard() {
 
                                             {selectedCrop === index && (
                                                 <div className={`mt-3 pt-3 border-t flex items-center justify-center gap-1.5 ${d ? 'border-green-500/20 text-green-400' : 'border-green-100 text-green-600'}`}>
-                                                    <span className="text-[11px] font-black uppercase tracking-widest">Active Report</span>
+                                                    <span className="text-[11px] font-black uppercase tracking-widest">{t.activeReport}</span>
                                                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
                                                 </div>
                                             )}
@@ -519,16 +536,16 @@ export default function CropAnalyzerDashboard() {
                         <section className={`rounded-2xl shadow-sm border p-4 sm:p-6 transition-colors duration-300 ${d ? 'bg-[#252636] border-[#33344a]' : 'bg-white border-gray-200/60'}`}>
                             <div className="flex items-center gap-2 mb-5">
                                 <BarChart3 className={`w-5 h-5 ${d ? 'text-blue-400' : 'text-blue-600'}`} />
-                                <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>Comparative Analytics</h2>
+                                <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>{t.comparativeAnalytics}</h2>
                             </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                                 {/* Profit Analysis */}
                                 <div className={`rounded-xl p-4 sm:p-5 border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-[#33344a]' : 'bg-gradient-to-br from-blue-50/80 to-indigo-50/50 border-blue-100/50'}`}>
                                     <h3 className={`text-sm font-bold mb-1 flex items-center gap-1.5 ${d ? 'text-gray-200' : 'text-gray-800'}`}>
-                                        💰 Profit Potential
+                                        💰 {t.profitPotential}
                                     </h3>
-                                    <p className="text-[11px] text-gray-500 mb-4">Min vs Max expected profits across crops</p>
+                                    <p className="text-[11px] text-gray-500 mb-4">{t.profitPotential}</p>
                                     <div className="w-full">
                                         <ResponsiveContainer width="100%" height={250}>
                                             <BarChart data={profitComparisonData}>
@@ -547,7 +564,7 @@ export default function CropAnalyzerDashboard() {
                                 {/* ROI Comparison */}
                                 <div className={`rounded-xl p-4 sm:p-5 border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-[#33344a]' : 'bg-gradient-to-br from-green-50/80 to-emerald-50/50 border-green-100/50'}`}>
                                     <h3 className={`text-sm font-bold mb-1 flex items-center gap-1.5 ${d ? 'text-gray-200' : 'text-gray-800'}`}>
-                                        📊 ROI Comparison
+                                        📊 {t.roiComparison}
                                     </h3>
                                     <p className="text-[11px] text-gray-500 mb-4">Investment vs profit with ROI percentage</p>
                                     <div className="w-full">
@@ -570,7 +587,7 @@ export default function CropAnalyzerDashboard() {
                                 {/* NPK Nutrients */}
                                 <div className={`rounded-xl p-4 sm:p-5 border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-[#33344a]' : 'bg-gradient-to-br from-amber-50/80 to-yellow-50/50 border-amber-100/50'}`}>
                                     <h3 className={`text-sm font-bold mb-1 flex items-center gap-1.5 ${d ? 'text-gray-200' : 'text-gray-800'}`}>
-                                        🧪 NPK Requirements
+                                        🧪 {t.npkRequirements}
                                     </h3>
                                     <p className="text-[11px] text-gray-500 mb-4">Nitrogen, Phosphorus & Potassium needs (kg)</p>
                                     <div className="w-full">
@@ -592,7 +609,7 @@ export default function CropAnalyzerDashboard() {
                                 {/* Water Requirements */}
                                 <div className={`rounded-xl p-4 sm:p-5 border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-[#33344a]' : 'bg-gradient-to-br from-cyan-50/80 to-sky-50/50 border-cyan-100/50'}`}>
                                     <h3 className={`text-sm font-bold mb-1 flex items-center gap-1.5 ${d ? 'text-gray-200' : 'text-gray-800'}`}>
-                                        💧 Water Requirements
+                                        💧 {t.waterRequirement}
                                     </h3>
                                     <p className="text-[11px] text-gray-500 mb-4">Daily water consumption (liters/day)</p>
                                     <div className="w-full">
@@ -618,16 +635,16 @@ export default function CropAnalyzerDashboard() {
                                     <span className="text-xl">{getCropEmoji(selectedCropData.recommended_crop)}</span>
                                     <div>
                                         <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            {selectedCropData.recommended_crop} — Deep Dive
+                                            {selectedCropData.recommended_crop} — {t.deepDive}
                                         </h2>
-                                        <p className="text-xs text-gray-500">Detailed resource requirements and analysis</p>
+                                        <p className="text-xs text-gray-500">{t.activeReport}</p>
                                     </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                                     {/* Nutrient Radar */}
                                     <div className={`rounded-xl p-4 sm:p-5 border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-[#33344a]' : 'bg-gradient-to-br from-purple-50/80 to-violet-50/50 border-purple-100/50'}`}>
-                                        <h3 className={`text-sm font-bold mb-1 ${d ? 'text-gray-200' : 'text-gray-800'}`}>🎯 Resource Profile</h3>
+                                        <h3 className={`text-sm font-bold mb-1 ${d ? 'text-gray-200' : 'text-gray-800'}`}>🎯 {t.features.roi.title}</h3>
                                         <p className="text-[11px] text-gray-500 mb-3">Nutrient & water requirements radar</p>
                                         <div className="w-full">
                                             <ResponsiveContainer width="100%" height={260}>
@@ -644,7 +661,7 @@ export default function CropAnalyzerDashboard() {
 
                                     {/* Fertilizer Pie */}
                                     <div className={`rounded-xl p-4 sm:p-5 border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-[#33344a]' : 'bg-gradient-to-br from-orange-50/80 to-amber-50/50 border-orange-100/50'}`}>
-                                        <h3 className={`text-sm font-bold mb-1 ${d ? 'text-gray-200' : 'text-gray-800'}`}>🌿 Fertilizer Mix</h3>
+                                        <h3 className={`text-sm font-bold mb-1 ${d ? 'text-gray-200' : 'text-gray-800'}`}>🌿 {t.fertilizerMix}</h3>
                                         <p className="text-[11px] text-gray-500 mb-3">Quantity (kg) of each fertilizer type</p>
                                         <div className="w-full">
                                             <ResponsiveContainer width="100%" height={260}>
@@ -677,7 +694,7 @@ export default function CropAnalyzerDashboard() {
                                             <div>
                                                 <h4 className={`text-[10px] font-black uppercase tracking-[0.1em] mb-2 flex items-center gap-1.5 ${d ? 'text-blue-400' : 'text-blue-700'}`}>
                                                     <Droplets className="w-3 h-3" />
-                                                    Vital Inputs
+                                                    {t.waterRequirement}
                                                 </h4>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {[
@@ -694,7 +711,7 @@ export default function CropAnalyzerDashboard() {
                                                 </div>
                                             </div>
                                             <div>
-                                                <h4 className={`text-[10px] font-black uppercase tracking-[0.1em] mb-2 ${d ? 'text-emerald-400' : 'text-emerald-700'}`}>Fertilizer Mix</h4>
+                                                <h4 className={`text-[10px] font-black uppercase tracking-[0.1em] mb-2 ${d ? 'text-emerald-400' : 'text-emerald-700'}`}>{t.fertilizers}</h4>
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {selectedCropData.requirements.fertilizers.map((fert, index) => (
                                                         <div key={index} className={`flex flex-col p-2.5 rounded-xl border transition-colors ${d ? 'bg-[#252636] border-[#33344a]' : 'bg-white border-green-100'}`}>
@@ -709,8 +726,8 @@ export default function CropAnalyzerDashboard() {
 
                                     {/* Alternative Crops */}
                                     <div className={`rounded-xl p-4 sm:p-5 border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-[#33344a]' : 'bg-gradient-to-br from-pink-50/80 to-rose-50/50 border-pink-100/50'}`}>
-                                        <h3 className={`text-sm font-bold mb-1 ${d ? 'text-gray-200' : 'text-gray-800'}`}>🌾 Potential Alternatives</h3>
-                                        <p className="text-[11px] text-gray-500 mb-4">Crops sharing similar growth profiles</p>
+                                        <h3 className={`text-sm font-bold mb-1 ${d ? 'text-gray-200' : 'text-gray-800'}`}>🌾 {t.alternatives}</h3>
+                                        <p className="text-[11px] text-gray-500 mb-4">{t.alternativeDesc}</p>
                                         <div className="flex flex-wrap gap-2 mb-5">
                                             {selectedCropData.top_similar_crops.map((crop, index) => (
                                                 <span key={index} className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${d ? 'bg-[#252636] border-pink-500/20 text-gray-200' : 'bg-white border-pink-100 text-gray-700 shadow-sm'
@@ -721,7 +738,7 @@ export default function CropAnalyzerDashboard() {
                                         </div>
                                         <div className={`p-4 rounded-xl border italic text-xs leading-relaxed ${d ? 'bg-pink-900/10 border-pink-500/20 text-gray-400' : 'bg-pink-50/50 border-pink-100 text-gray-600'
                                             }`}>
-                                            <strong className={d ? 'text-pink-400' : 'text-pink-700'}>Expert Tip:</strong> These alternatives are resilient pivots if primary seeds are unavailable or market prices shift unfavorably.
+                                            <strong className={d ? 'text-pink-400' : 'text-pink-700'}>{t.expertTip}:</strong> {t.expertTipDesc}
                                         </div>
                                     </div>
                                 </div>
@@ -737,8 +754,8 @@ export default function CropAnalyzerDashboard() {
                                         <DollarSign className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl sm:text-2xl font-black">Financial Integrity Report</h2>
-                                        <p className="text-sm text-green-100/70">Estimated market returns & resource allocation</p>
+                                        <h2 className="text-xl sm:text-2xl font-black">{t.results}</h2>
+                                        <p className="text-sm text-green-100/70">{t.footerWarning}</p>
                                     </div>
                                 </div>
 
@@ -758,22 +775,22 @@ export default function CropAnalyzerDashboard() {
 
                                                 <div className="space-y-3.5 mb-5">
                                                     <div className="flex justify-between items-end">
-                                                        <span className="text-[10px] text-green-100 font-bold uppercase tracking-widest leading-none">Investment</span>
+                                                        <span className="text-[10px] text-green-100 font-bold uppercase tracking-widest leading-none">{t.budget}</span>
                                                         <span className="font-black text-sm leading-none">₹{rec.estimated_budget_needed_rs.toLocaleString()}</span>
                                                     </div>
                                                     <div className="flex justify-between items-end">
-                                                        <span className="text-[10px] text-green-100 font-bold uppercase tracking-widest leading-none">Net Profit</span>
+                                                        <span className="text-[10px] text-green-100 font-bold uppercase tracking-widest leading-none">{t.profit}</span>
                                                         <span className="font-black text-sm text-yellow-300 leading-none">₹{avgProfit.toLocaleString()}</span>
                                                     </div>
                                                     <div className="flex justify-between items-end">
-                                                        <span className="text-[10px] text-green-100 font-bold uppercase tracking-widest leading-none">Return On I.</span>
+                                                        <span className="text-[10px] text-green-100 font-bold uppercase tracking-widest leading-none">ROI</span>
                                                         <span className="font-black text-sm text-green-300 leading-none">{roi.toFixed(1)}%</span>
                                                     </div>
                                                 </div>
 
                                                 <div>
                                                     <div className="flex justify-between text-[9px] mb-1.5 font-black uppercase tracking-[0.2em] text-green-200">
-                                                        <span>Margin Analysis</span>
+                                                        <span>{t.marginAnalysis}</span>
                                                         <span>{profitMargin.toFixed(0)}%</span>
                                                     </div>
                                                     <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
@@ -791,7 +808,7 @@ export default function CropAnalyzerDashboard() {
                                 <div className="mt-8 p-4 bg-black/10 rounded-2xl border border-white/5 flex gap-3 items-start">
                                     <Info className="w-4 h-4 text-yellow-300 flex-shrink-0 mt-0.5" />
                                     <p className="text-[11px] text-green-50/70 leading-relaxed italic">
-                                        These projections are synthesized from historical yield patterns and current commodity indexes. Actual results depends on localized climate variations and precision farming adherence.
+                                        {t.financialDisclaimer}
                                     </p>
                                 </div>
                             </div>
@@ -806,10 +823,10 @@ export default function CropAnalyzerDashboard() {
                             <section className={`rounded-2xl shadow-sm border p-4 sm:p-6 transition-colors duration-300 ${d ? 'bg-[#252636] border-[#33344a]' : 'bg-white border-gray-200/60'}`}>
                                 <div className="flex items-center gap-2 mb-2">
                                     <Info className="w-5 h-5 text-blue-600" />
-                                    <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>Data Reference</h2>
+                                    <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>{t.dataReference}</h2>
                                 </div>
                                 <p className="text-xs text-gray-500 mb-4">
-                                    Powered by weather intelligence, AI reasoning, and historical crop performance records.
+                                    {t.dataReferenceDesc}
                                 </p>
 
                                 <div className="overflow-x-auto -mx-4 sm:mx-0">
@@ -817,13 +834,13 @@ export default function CropAnalyzerDashboard() {
                                         <table className="w-full text-xs">
                                             <thead>
                                                 <tr className={`border-b transition-colors ${d ? 'bg-[#1e1f2b] border-[#33344a]' : 'bg-gray-50 border-gray-200'}`}>
-                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>Crop</th>
-                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>Year</th>
-                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>Season</th>
-                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>Area (ha)</th>
-                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>Production</th>
-                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>Yield</th>
-                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>Rainfall</th>
+                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>{t.crop}</th>
+                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>{t.year}</th>
+                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>{t.season}</th>
+                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>{t.area}</th>
+                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>{t.production}</th>
+                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>{t.yield}</th>
+                                                    <th className={`px-3 py-3 text-left font-bold uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-600'}`}>{t.rainfall}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -849,43 +866,22 @@ export default function CropAnalyzerDashboard() {
                         <section className={`rounded-2xl shadow-sm border p-4 sm:p-6 transition-colors duration-300 ${d ? 'bg-[#252636] border-[#33344a]' : 'bg-white border-gray-200/60'}`}>
                             <div className="flex items-center gap-2 mb-4">
                                 <AlertCircle className={`w-5 h-5 ${d ? 'text-indigo-400' : 'text-indigo-600'}`} />
-                                <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>Next Steps</h2>
+                                <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>{t.dashboard.nextSteps}</h2>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {[
-                                    {
-                                        num: 1, title: 'Soil Testing', icon: '🔬',
-                                        desc: 'Get soil tested for NPK levels and pH balance.',
-                                        steps: ['Contact local agri department', 'Collect samples from multiple spots', 'Wait 7-10 days for results']
-                                    },
-                                    {
-                                        num: 2, title: 'Seed Procurement', icon: '🌱',
-                                        desc: 'Source certified seeds from authorized dealers.',
-                                        steps: ['Verify seed certification', 'Check germination rate (85%+)', 'Buy 10% extra for contingency']
-                                    },
-                                    {
-                                        num: 3, title: 'Water Management', icon: '💧',
-                                        desc: 'Plan irrigation based on daily water requirements.',
-                                        steps: ['Install drip irrigation', 'Check water table levels', 'Plan for monsoon/dry season']
-                                    },
-                                    {
-                                        num: 4, title: 'Budget Planning', icon: '💰',
-                                        desc: 'Allocate funds for seeds, fertilizers, and labor.',
-                                        steps: ['Keep 20% buffer for emergencies', 'Explore agricultural loans', 'Consider crop insurance']
-                                    }
-                                ].map((step) => (
-                                    <div key={step.num} className={`rounded-2xl p-4 border transition-colors ${d ? 'bg-[#1e1f2b] border-[#33344a]' : 'bg-gray-50 border-gray-100'
+                                {t.dashboard.actions.map((step: any, idx: number) => (
+                                    <div key={idx} className={`rounded-2xl p-4 border transition-colors ${d ? 'bg-[#1e1f2b] border-[#33344a]' : 'bg-gray-50 border-gray-100'
                                         }`}>
                                         <div className="flex items-center gap-2 mb-3">
                                             <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black ${d ? 'bg-green-900/40 text-green-400' : 'bg-green-100 text-green-700'
-                                                }`}>{step.num}</span>
-                                            <span className="text-sm">{step.icon}</span>
+                                                }`}>{idx + 1}</span>
+                                            <span className="text-sm">{['🔬', '🌱', '💧', '💰'][idx]}</span>
                                             <h3 className={`text-sm font-bold ${d ? 'text-gray-200' : 'text-gray-800'}`}>{step.title}</h3>
                                         </div>
                                         <p className={`text-[11px] mb-3 leading-relaxed ${d ? 'text-gray-400' : 'text-gray-500'}`}>{step.desc}</p>
                                         <ul className={`text-[11px] space-y-1.5 list-none ${d ? 'text-gray-500' : 'text-gray-500'}`}>
-                                            {step.steps.map((s, i) => (
+                                            {step.steps.map((s: string, i: number) => (
                                                 <li key={i} className="flex gap-2 items-start">
                                                     <div className="w-1 h-1 rounded-full bg-indigo-400 mt-[6px] shrink-0"></div>
                                                     <span>{s}</span>
@@ -899,9 +895,9 @@ export default function CropAnalyzerDashboard() {
                             <div className="mt-4 p-3 bg-indigo-50 rounded-xl border border-indigo-100 flex items-start gap-2">
                                 <CloudRain className={`w-4 h-4 flex-shrink-0 mt-0.5 ${d ? 'text-indigo-400' : 'text-indigo-600'}`} />
                                 <div>
-                                    <h4 className="text-xs font-bold text-gray-800">Weather Monitoring</h4>
+                                    <h4 className="text-xs font-bold text-gray-800">{t.dashboard.monitoring}</h4>
                                     <p className="text-[11px] text-gray-500 leading-relaxed">
-                                        Track weather forecasts and rainfall predictions. Plant timing is crucial for optimal performance. Subscribe to agricultural weather alerts.
+                                        {t.dashboard.monitoringDesc}
                                     </p>
                                 </div>
                             </div>
@@ -911,11 +907,9 @@ export default function CropAnalyzerDashboard() {
                         <div className="bg-amber-50/80 border border-amber-200/60 rounded-xl p-4 flex items-start gap-2.5">
                             <AlertCircle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${d ? 'text-amber-500/80' : 'text-amber-600'}`} />
                             <div>
-                                <h3 className="text-xs font-bold text-gray-800 mb-1">Disclaimer</h3>
+                                <h3 className="text-xs font-bold text-gray-800 mb-1">{t.dashboard.disclaimerTitle}</h3>
                                 <p className="text-[11px] text-gray-600 leading-relaxed">
-                                    These recommendations combine real-time weather, historical agricultural data, and AI reasoning.
-                                    Actual results may vary based on micro-climate, soil quality, pest management, and market prices.
-                                    Consult local experts and get soil testing done before final decisions. Profit estimates are indicative, not guaranteed.
+                                    {t.dashboard.disclaimerDesc}
                                 </p>
                             </div>
                         </div>
@@ -927,7 +921,7 @@ export default function CropAnalyzerDashboard() {
             <footer className={`border-t mt-8 transition-colors duration-300 ${d ? 'border-[#2e2f42] bg-[#252636]' : 'border-gray-200/60 bg-white'}`}>
                 <div className="max-w-7xl mx-auto px-4 py-5 text-center">
                     <p className={`text-xs ${d ? 'text-gray-500' : 'text-gray-400'}`}>
-                        Powered by AI & Historical Agricultural Data · AgriSense Intelligence Platform
+                        {t.dashboard.footerText}
                     </p>
                 </div>
             </footer>

@@ -49,7 +49,7 @@ function extractJson(text: string | null) {
 }
 
 // ---------- fallback builder (if model fails) ----------
-function fallbackFromRetrieved(retrieved: any[], size: number, budget: number) {
+function fallbackFromRetrieved(retrieved: any[], size: number, budget: number, language?: string) {
     const recommendations = retrieved.slice(0, 4).map((p, idx) => {
         const payload = p.payload || p;
         const crop = payload.crop || payload.Crop || `Crop_${idx + 1}`;
@@ -65,7 +65,15 @@ function fallbackFromRetrieved(retrieved: any[], size: number, budget: number) {
 
         return {
             recommended_crop: crop,
-            why: `Derived from similar historical records and user land info.`,
+            why: language === 'hi' ? 'समान ऐतिहासिक रिकॉर्ड और आपके खेत की जानकारी से प्राप्त।' :
+                language === 'mr' ? 'समान ऐतिहासिक रेकॉर्ड आणि तुमच्या शेताच्या माहितीवरून प्राप्त.' :
+                    language === 'te' ? 'సమానమైన చారిత్రక రికార్డులు మరియు మీ పొలం వివరాల నుండి తీసుకోబడింది.' :
+                        language === 'bn' ? 'অনুরূপ ঐতিহাসিক রেকর্ড এবং আপনার খামারের তথ্য থেকে প্রাপ্ত।' :
+                            language === 'ta' ? 'ஒரே மாதிரியான வரலாற்று பதிவுகள் மற்றும் உங்கள் பண்ணை தகவல்களில் இருந்து பெறப்பட்டது.' :
+                                language === 'gu' ? 'સમાન ઐતિહાસિક રેકોર્ડ અને તમારી ખેતીની માહિતી પરથી મેળવેલ.' :
+                                    language === 'kn' ? 'ಸಮಾನ ಐತಿಹಾಸಿಕ ದಾಖಲೆಗಳು ಮತ್ತು ನಿಮ್ಮ ಜಮೀನಿನ ಮಾಹಿತಿಯಿಂದ ಪಡೆಯಲಾಗಿದೆ.' :
+                                        language === 'pa' ? 'ਸਮਾਨ ਇਤਿਹਾਸਕ ਰਿਕਾਰਡ ਅਤੇ ਤੁਹਾਡੇ ਖੇਤ ਦੀ ਜਾਣਕਾਰੀ ਤੋਂ ਪ੍ਰਾਪਤ।' :
+                                            `Derived from similar historical records and user land info.`,
             requirements: {
                 water_liters_per_day: water_per_day,
                 nitrogen_kg: nitrogen,
@@ -121,7 +129,7 @@ Keep it under 100 words. Return plain text only.`;
 
 export async function POST(req: Request) {
     try {
-        const { location, size, previously_grown, budget, soil_type, water_source, season } = await req.json();
+        const { location, size, previously_grown, budget, soil_type, water_source, season, language } = await req.json();
 
         if (!location || !size || !budget) {
             return NextResponse.json({ error: "Missing required fields: location, size, budget" }, { status: 400 });
@@ -189,7 +197,8 @@ ABSOLUTE RULES (VIOLATION = FAILURE):
 5. Each fertilizer list should have 3-5 specific Indian fertilizer products (Urea, DAP, MOP, SSP, Zinc Sulphate, Gypsum, etc.) with DIFFERENT quantities per crop.
 6. top_similar_crops must list 3 genuinely different alternative crops for each recommendation.
 7. expected_profit_range_rs must have a meaningful spread (min should be 60-75% of max, NOT identical).
-8. Output ONLY valid JSON array. No markdown, no backticks, no explanation.`;
+8. Output ONLY valid JSON array. No markdown, no backticks, no explanation.
+9. CRITICAL: Provide the "why" field in ${language || 'English'} language. All other fields (including "recommended_crop", "name" inside fertilizers, and "top_similar_crops") MUST remain in English for system compatibility.`;
 
         const userPrompt = `FARMER PROFILE:
 - Location: ${location}
@@ -199,6 +208,7 @@ ABSOLUTE RULES (VIOLATION = FAILURE):
 - Planting Season: ${season || "not specified"}
 - Previous crop: ${previously_grown || "none"}
 - Budget: ₹${budget}
+- Output Language: ${language || 'English'}
 
 LIVE WEATHER for ${location}:
 ${weatherContext}
@@ -298,7 +308,7 @@ REMEMBER: 4 DIFFERENT crops, 4 DIFFERENT sets of numbers. No duplicates. Respect
                 };
             });
         } else {
-            finalOutput = fallbackFromRetrieved(retrieved, landSize, userBudget);
+            finalOutput = fallbackFromRetrieved(retrieved, landSize, userBudget, language);
         }
 
         return NextResponse.json({
