@@ -50,9 +50,21 @@ function extractJson(text: string | null) {
 
 // ---------- fallback builder (if model fails) ----------
 function fallbackFromRetrieved(retrieved: any[], size: number, budget: number, language?: string) {
+    const cropLocalizedMap: Record<string, Record<string, string>> = {
+        'hi': { 'Rice': 'चावल', 'Wheat': 'गेहूं', 'Maize': 'मक्का', 'Pulses': 'दालें', 'Cotton': 'कपास', 'Groundnut': 'मूंगफली', 'Millets': 'बाजरा' },
+        'kn': { 'Rice': 'ಅಕ್ಕಿ', 'Wheat': 'ಗೋಧಿ', 'Maize': 'ಮುಸುಕಿನ ಜೋಳ', 'Pulses': 'ಬೇಳೆಕಾಳುಗಳು', 'Cotton': 'ಹತ್ತಿ', 'Groundnut': 'ನೆಲಗಡಲೆ', 'Millets': 'ಸಿರಿಧಾನ್ಯಗಳು' },
+        'te': { 'Rice': 'వరి', 'Wheat': 'గోధుమ', 'Maize': 'మొక్కజొన్న', 'Pulses': 'పప్పుధాన్యాలు', 'Cotton': 'పత్తి', 'Groundnut': 'వేరుశనగ', 'Millets': 'చిరుధాన్యాలు' },
+        'ta': { 'Rice': 'அரிசி', 'Wheat': 'கோதுமை', 'Maize': 'சோளம்', 'Pulses': 'பருப்பு வகைகள்', 'Cotton': 'பருத்தி', 'Groundnut': 'நிலக்கடலை', 'Millets': 'சிறுதானியங்கள்' },
+        'mr': { 'Rice': 'तांदूळ', 'Wheat': 'गहू', 'Maize': 'मका', 'Pulses': 'डाळी', 'Cotton': 'कापूस', 'Groundnut': 'भुईमूग', 'Millets': 'तृणधान्ये' },
+        'pa': { 'Rice': 'ਚਾਵਲ', 'Wheat': 'ਕਣਕ', 'Maize': 'ਮੱਕੀ', 'Pulses': 'ਦਾਲਾਂ', 'Cotton': 'ਕਪਾਹ', 'Groundnut': 'ਮੂੰਗਫਲੀ', 'Millets': 'ਬਾਜਰਾ' },
+        'bn': { 'Rice': 'চাল', 'Wheat': 'গম', 'Maize': 'ভুট্টা', 'Pulses': 'ডাল', 'Cotton': 'তুলা', 'Groundnut': 'চিনাবাদাম', 'Millets': 'বাজরা' },
+        'gu': { 'Rice': 'ચોખા', 'Wheat': 'ઘઉં', 'Maize': 'મકાઈ', 'Pulses': 'દાળ', 'Cotton': 'કપાસ', 'Groundnut': 'મગફળી', 'Millets': 'બાજરી' },
+    };
+
     const recommendations = retrieved.slice(0, 4).map((p, idx) => {
         const payload = p.payload || p;
         const crop = payload.crop || payload.Crop || `Crop_${idx + 1}`;
+        const cropLocalized = cropLocalizedMap[language || 'en']?.[crop] || crop;
 
         const annualRainfall = payload.annual_rainfall || 1000;
         const water_per_day = Math.round(Math.max(1000, 3000 - annualRainfall / 1) * size);
@@ -65,13 +77,14 @@ function fallbackFromRetrieved(retrieved: any[], size: number, budget: number, l
 
         return {
             recommended_crop: crop,
+            recommended_crop_localized: cropLocalized,
             why: language === 'hi' ? 'समान ऐतिहासिक रिकॉर्ड और आपके खेत की जानकारी से प्राप्त।' :
-                language === 'mr' ? 'समान ऐतिहासिक रेकॉर्ड आणि तुमच्या शेताच्या माहितीवरून प्राप्त.' :
+                language === 'kn' ? 'ಸಮಾನ ಐತಿಹಾಸಿಕ ದಾಖಲೆಗಳು ಮತ್ತು ನಿಮ್ಮ ಜಮೀನಿನ ಮಾಹಿತಿಯಿಂದ ಪಡೆಯಲಾಗಿದೆ.' :
                     language === 'te' ? 'సమానమైన చారిత్రక రికార్డులు మరియు మీ పొలం వివరాల నుండి తీసుకోబడింది.' :
-                        language === 'bn' ? 'অনুরূপ ঐতিহাসিক রেকর্ড এবং আপনার খামারের তথ্য থেকে প্রাপ্ত।' :
-                            language === 'ta' ? 'ஒரே மாதிரியான வரலாற்று பதிவுகள் மற்றும் உங்கள் பண்ணை தகவல்களில் இருந்து பெறப்பட்டது.' :
-                                language === 'gu' ? 'સમાન ઐતિહાસિક રેકોર્ડ અને તમારી ખેતીની માહિતી પરથી મેળવેલ.' :
-                                    language === 'kn' ? 'ಸಮಾನ ಐತಿಹಾಸಿಕ ದಾಖಲೆಗಳು ಮತ್ತು ನಿಮ್ಮ ಜಮೀನಿನ ಮಾಹಿತಿಯಿಂದ ಪಡೆಯಲಾಗಿದೆ.' :
+                        language === 'mr' ? 'समान ऐतिहासिक रेकॉर्ड आणि तुमच्या शेताच्या माहितीवरून प्राप्त.' :
+                            language === 'bn' ? 'অনুরূপ ঐতিহাসিক রেকর্ড এবং আপনার খামারের তথ্য থেকে প্রাপ্ত।' :
+                                language === 'ta' ? 'ஒரே மாதிரியான வரலாற்று பதிவுகள் மற்றும் உங்கள் பண்ணை தகவல்களில் இருந்து பெறப்பட்டது.' :
+                                    language === 'gu' ? 'સમાન ઐતિહાસિક રેકોર્ડ અને તમારી ખેતીની માહિતી પરથી મેળવેલ.' :
                                         language === 'pa' ? 'ਸਮਾਨ ਇਤਿਹਾਸਕ ਰਿਕਾਰਡ ਅਤੇ ਤੁਹਾਡੇ ਖੇਤ ਦੀ ਜਾਣਕਾਰੀ ਤੋਂ ਪ੍ਰਾਪਤ।' :
                                             `Derived from similar historical records and user land info.`,
             requirements: {
@@ -80,8 +93,16 @@ function fallbackFromRetrieved(retrieved: any[], size: number, budget: number, l
                 phosphorus_kg: phosphorus,
                 potassium_kg: potassium,
                 fertilizers: [
-                    { name: "Urea (est)", amount_kg: Math.round(nitrogen * 0.7) },
-                    { name: "DAP (est)", amount_kg: Math.round(phosphorus * 0.6) }
+                    {
+                        name: "Urea (est)",
+                        name_localized: (language === 'hi' ? 'यूरिया' : language === 'kn' ? 'ಯೂರಿಯಾ' : 'Urea'),
+                        amount_kg: Math.round(nitrogen * 0.7)
+                    },
+                    {
+                        name: "DAP (est)",
+                        name_localized: (language === 'hi' ? 'डीएपी' : language === 'kn' ? 'ಡಿಎಪಿ' : 'DAP'),
+                        amount_kg: Math.round(phosphorus * 0.6)
+                    }
                 ]
             },
             expected_output_kg: expected_output,
@@ -90,6 +111,11 @@ function fallbackFromRetrieved(retrieved: any[], size: number, budget: number, l
             top_similar_crops: retrieved.slice(0, 5).map(r => {
                 const rPayload = r.payload || r;
                 return rPayload.crop || rPayload.Crop;
+            }).filter(Boolean),
+            top_similar_crops_localized: retrieved.slice(0, 5).map(r => {
+                const rPayload = r.payload || r;
+                const rCrop = rPayload.crop || rPayload.Crop;
+                return cropLocalizedMap[language || 'en']?.[rCrop] || rCrop;
             }).filter(Boolean)
         };
     });
@@ -129,7 +155,21 @@ Keep it under 100 words. Return plain text only.`;
 
 export async function POST(req: Request) {
     try {
-        const { location, size, previously_grown, budget, soil_type, water_source, season, language } = await req.json();
+        const { location, size, previously_grown, budget, soil_type, water_source, season, language = 'en' } = await req.json();
+
+        // Language Mapping
+        const languageMap: Record<string, string> = {
+            'en': 'English',
+            'hi': 'Hindi',
+            'kn': 'Kannada',
+            'te': 'Telugu',
+            'ta': 'Tamil',
+            'mr': 'Marathi',
+            'pa': 'Punjabi',
+            'bn': 'Bengali',
+            'gu': 'Gujarati'
+        };
+        const fullLanguage = languageMap[language] || 'English';
 
         if (!location || !size || !budget) {
             return NextResponse.json({ error: "Missing required fields: location, size, budget" }, { status: 400 });
@@ -198,7 +238,8 @@ ABSOLUTE RULES (VIOLATION = FAILURE):
 6. top_similar_crops must list 3 genuinely different alternative crops for each recommendation.
 7. expected_profit_range_rs must have a meaningful spread (min should be 60-75% of max, NOT identical).
 8. Output ONLY valid JSON array. No markdown, no backticks, no explanation.
-9. CRITICAL: Provide the "why" field in ${language || 'English'} language. All other fields (including "recommended_crop", "name" inside fertilizers, and "top_similar_crops") MUST remain in English for system compatibility.`;
+9. CRITICAL: Provide the "why", "recommended_crop_localized", "top_similar_crops_localized", and fertilizer "name_localized" fields in ${fullLanguage} language. 
+10. The fields "recommended_crop", "name" (inside fertilizers), and "top_similar_crops" MUST remain in English for system compatibility and emoji mapping.`;
 
         const userPrompt = `FARMER PROFILE:
 - Location: ${location}
@@ -208,7 +249,7 @@ ABSOLUTE RULES (VIOLATION = FAILURE):
 - Planting Season: ${season || "not specified"}
 - Previous crop: ${previously_grown || "none"}
 - Budget: ₹${budget}
-- Output Language: ${language || 'English'}
+- Output Language: ${fullLanguage}
 
 LIVE WEATHER for ${location}:
 ${weatherContext}
@@ -223,19 +264,21 @@ IMPORTANT CONSTRAINTS FROM FARMER INPUTS:
 
 OUTPUT: JSON array of exactly 4 objects, each with this schema:
 {
-  "recommended_crop": "CropName",
-  "why": "2-3 sentence expert justification blending soil, water, season, weather, and market reasoning",
+  "recommended_crop": "CropNameInEnglish",
+  "recommended_crop_localized": "CropNameIn${fullLanguage}",
+  "why": "2-3 sentence expert justification in ${fullLanguage} blending soil, water, season, weather, and market reasoning",
   "requirements": {
     "water_liters_per_day": number (scaled to ${size} acres, MUST differ significantly between crops),
     "nitrogen_kg": number (scaled to ${size} acres),
     "phosphorus_kg": number (scaled, typically 40-70% of nitrogen),
     "potassium_kg": number (scaled, typically 30-60% of nitrogen),
-    "fertilizers": [{"name": "specific Indian fertilizer", "amount_kg": number}, ...] (3-5 items, different per crop)
+    "fertilizers": [{"name": "EnglishName", "name_localized": "NameIn${fullLanguage}", "amount_kg": number}, ...] (3-5 items, different per crop)
   },
   "expected_output_kg": number (realistic for ${size} acres of this specific crop),
   "expected_profit_range_rs": [min_number, max_number] (min = 60-75% of max),
   "estimated_budget_needed_rs": number (must differ per crop based on input costs),
-  "top_similar_crops": ["alt1", "alt2", "alt3"]
+  "top_similar_crops": ["English1", "English2", "English3"],
+  "top_similar_crops_localized": ["Local1", "Local2", "Local3"]
 }
 
 REMEMBER: 4 DIFFERENT crops, 4 DIFFERENT sets of numbers. No duplicates. Respect soil/water/season constraints. JSON only.`;
@@ -288,6 +331,7 @@ REMEMBER: 4 DIFFERENT crops, 4 DIFFERENT sets of numbers. No duplicates. Respect
                 const req = item.requirements || {};
                 return {
                     recommended_crop: item.recommended_crop || `Crop_${idx + 1}`,
+                    recommended_crop_localized: item.recommended_crop_localized || item.recommended_crop || `Crop_${idx + 1}`,
                     why: item.why || "Synthesized from weather, historical data, and agronomic reasoning.",
                     requirements: {
                         water_liters_per_day: Number(req.water_liters_per_day || 0),
@@ -296,6 +340,7 @@ REMEMBER: 4 DIFFERENT crops, 4 DIFFERENT sets of numbers. No duplicates. Respect
                         potassium_kg: Number(req.potassium_kg || 0),
                         fertilizers: Array.isArray(req.fertilizers) ? req.fertilizers.map((f: any) => ({
                             name: f.name || "Unknown",
+                            name_localized: f.name_localized || f.name || "Unknown",
                             amount_kg: Number(f.amount_kg || 0)
                         })) : []
                     },
@@ -304,7 +349,9 @@ REMEMBER: 4 DIFFERENT crops, 4 DIFFERENT sets of numbers. No duplicates. Respect
                         item.expected_profit_range_rs.map(Number) : [0, 0],
                     estimated_budget_needed_rs: Number(item.estimated_budget_needed_rs || 0),
                     top_similar_crops: Array.isArray(item.top_similar_crops) ?
-                        item.top_similar_crops.slice(0, 5) : []
+                        item.top_similar_crops.slice(0, 5) : [],
+                    top_similar_crops_localized: Array.isArray(item.top_similar_crops_localized) ?
+                        item.top_similar_crops_localized.slice(0, 5) : []
                 };
             });
         } else {

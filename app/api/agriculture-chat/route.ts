@@ -7,6 +7,20 @@ export async function POST(req: Request) {
     try {
         const { question, language = 'en' } = await req.json();
 
+        // Language Mapping
+        const languageMap: Record<string, string> = {
+            'en': 'English',
+            'hi': 'Hindi',
+            'kn': 'Kannada',
+            'te': 'Telugu',
+            'ta': 'Tamil',
+            'mr': 'Marathi',
+            'pa': 'Punjabi',
+            'bn': 'Bengali',
+            'gu': 'Gujarati'
+        };
+        const fullLanguage = languageMap[language] || 'English';
+
         // Input validation
         if (!question || typeof question !== 'string') {
             return NextResponse.json({
@@ -17,8 +31,8 @@ export async function POST(req: Request) {
 
         const systemPrompt = `You are AgriSense AI, an expert agricultural specialist, crop scientist, and farming consultant with 20+ years of experience. Your role is to provide accurate, practical, and actionable advice to farmers and agriculture enthusiasts.
 
-        IMPORTANT: The user prefers ${language}. Please provide your entire response in ${language}. 
-        If ${language} is an Indian language (like Hindi, Marathi, Telugu, etc.), use the native script for that language.
+        CRITICAL: The user's interface is set to ${fullLanguage}. You MUST provide your entire response in ${fullLanguage}, even if the user asks their question in a different language (like English). 
+        If ${fullLanguage} is an Indian language, use its official native script and character set. Do not use English/Romani scripts for Indian languages.
 
         CORE PRINCIPLES:
         1. Be scientifically accurate but explain in simple terms
@@ -53,7 +67,7 @@ export async function POST(req: Request) {
 
         const userPrompt = `Farmer's Question: "${question}"
 
-        Please provide a comprehensive, practical answer as an agricultural expert. Focus on actionable advice that can be implemented directly.`;
+        Please provide a comprehensive, practical answer as an agricultural expert in ${fullLanguage}. Focus on actionable advice that can be implemented directly. Ensure the entire response is in ${fullLanguage}.`;
 
         // Call OpenAI LLM
         const completion = await openai.chat.completions.create({

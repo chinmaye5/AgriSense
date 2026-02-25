@@ -14,18 +14,20 @@ import { translations } from '@/lib/translations';
 
 interface Recommendation {
     recommended_crop: string;
+    recommended_crop_localized?: string;
     why: string;
     requirements: {
         water_liters_per_day: number;
         nitrogen_kg: number;
         phosphorus_kg: number;
         potassium_kg: number;
-        fertilizers: { name: string; amount_kg: number }[];
+        fertilizers: { name: string; name_localized?: string; amount_kg: number }[];
     };
     expected_output_kg: number;
     expected_profit_range_rs: [number, number];
     estimated_budget_needed_rs: number;
     top_similar_crops: string[];
+    top_similar_crops_localized?: string[];
 }
 
 interface ApiResponse {
@@ -68,6 +70,14 @@ export default function CropAnalyzerDashboard() {
     const [error, setError] = useState('');
     const [selectedCrop, setSelectedCrop] = useState<number>(0);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+    const [expandedCrops, setExpandedCrops] = useState<number[]>([]);
+
+    const toggleExpand = (e: React.MouseEvent, idx: number) => {
+        e.stopPropagation();
+        setExpandedCrops(prev =>
+            prev.includes(idx) ? prev.filter(i => i !== idx) : [...prev, idx]
+        );
+    };
 
     const SOIL_TYPES = Object.keys(t.soils);
     const WATER_SOURCES = Object.keys(t.waterSources);
@@ -145,21 +155,21 @@ export default function CropAnalyzerDashboard() {
 
     // Data preparation for visualizations
     const profitComparisonData = result?.recommendations.map(rec => ({
-        name: rec.recommended_crop,
+        name: rec.recommended_crop_localized || rec.recommended_crop,
         'Min Profit': rec.expected_profit_range_rs[0],
         'Max Profit': rec.expected_profit_range_rs[1],
         'Avg Profit': (rec.expected_profit_range_rs[0] + rec.expected_profit_range_rs[1]) / 2
     })) || [];
 
     const nutrientComparisonData = result?.recommendations.map(rec => ({
-        crop: rec.recommended_crop,
+        crop: rec.recommended_crop_localized || rec.recommended_crop,
         Nitrogen: rec.requirements.nitrogen_kg,
         Phosphorus: rec.requirements.phosphorus_kg,
         Potassium: rec.requirements.potassium_kg,
     })) || [];
 
     const waterRequirementData = result?.recommendations.map(rec => ({
-        crop: rec.recommended_crop,
+        crop: rec.recommended_crop_localized || rec.recommended_crop,
         'Daily Water (L)': rec.requirements.water_liters_per_day,
     })) || [];
 
@@ -167,7 +177,7 @@ export default function CropAnalyzerDashboard() {
         const avgProfit = (rec.expected_profit_range_rs[0] + rec.expected_profit_range_rs[1]) / 2;
         const roi = ((avgProfit - rec.estimated_budget_needed_rs) / rec.estimated_budget_needed_rs) * 100;
         return {
-            crop: rec.recommended_crop,
+            crop: rec.recommended_crop_localized || rec.recommended_crop,
             'Investment (₹)': rec.estimated_budget_needed_rs,
             'Expected Profit (₹)': avgProfit,
             'ROI %': parseFloat(roi.toFixed(1))
@@ -491,7 +501,7 @@ export default function CropAnalyzerDashboard() {
                                                 <div className="flex items-center gap-2.5">
                                                     <span className="text-3xl filter drop-shadow-sm">{emoji}</span>
                                                     <h3 className={`text-base font-bold leading-tight ${d ? 'text-gray-100' : 'text-gray-900'}`}>
-                                                        {rec.recommended_crop}
+                                                        {rec.recommended_crop_localized || rec.recommended_crop}
                                                     </h3>
                                                 </div>
                                                 <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg ${selectedCrop === index ? 'bg-green-600 text-white' : d ? 'bg-[#33344a] text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
@@ -499,7 +509,19 @@ export default function CropAnalyzerDashboard() {
                                                 </span>
                                             </div>
 
-                                            <p className={`text-xs mb-4 leading-relaxed line-clamp-2 italic ${d ? 'text-gray-400' : 'text-gray-500'}`}>{rec.why}</p>
+                                            <div className="relative">
+                                                <p className={`text-xs mb-4 leading-relaxed italic transition-all duration-300 ${d ? 'text-gray-400' : 'text-gray-500'} ${expandedCrops.includes(index) ? '' : 'line-clamp-2'}`}>
+                                                    {rec.why}
+                                                </p>
+                                                {rec.why && rec.why.length > 60 && (
+                                                    <button
+                                                        onClick={(e) => toggleExpand(e, index)}
+                                                        className={`text-[10px] font-bold -mt-3 mb-3 block hover:underline ${d ? 'text-green-400' : 'text-green-600'}`}
+                                                    >
+                                                        {expandedCrops.includes(index) ? '↑ Show Less' : '↓ Read More'}
+                                                    </button>
+                                                )}
+                                            </div>
 
                                             <div className="grid grid-cols-2 gap-2 relative z-10">
                                                 <div className={`p-2 rounded-xl border transition-colors ${d ? 'bg-[#1e1f2b]/50 border-blue-500/10' : 'bg-blue-50/50 border-blue-100'}`}>
@@ -635,7 +657,7 @@ export default function CropAnalyzerDashboard() {
                                     <span className="text-xl">{getCropEmoji(selectedCropData.recommended_crop)}</span>
                                     <div>
                                         <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>
-                                            {selectedCropData.recommended_crop} — {t.deepDive}
+                                            {selectedCropData.recommended_crop_localized || selectedCropData.recommended_crop} — {t.deepDive}
                                         </h2>
                                         <p className="text-xs text-gray-500">{t.activeReport}</p>
                                     </div>
@@ -671,7 +693,7 @@ export default function CropAnalyzerDashboard() {
                                                         cx="50%"
                                                         cy="50%"
                                                         labelLine={false}
-                                                        label={(entry: any) => `${entry.name}`}
+                                                        label={(entry: any) => `${entry.name_localized || entry.name}`}
                                                         outerRadius={80}
                                                         fill="#8884d8"
                                                         dataKey="amount_kg"
@@ -715,7 +737,7 @@ export default function CropAnalyzerDashboard() {
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {selectedCropData.requirements.fertilizers.map((fert, index) => (
                                                         <div key={index} className={`flex flex-col p-2.5 rounded-xl border transition-colors ${d ? 'bg-[#252636] border-[#33344a]' : 'bg-white border-green-100'}`}>
-                                                            <span className="text-[10px] text-gray-500 font-bold mb-0.5">{fert.name}</span>
+                                                            <span className="text-[10px] text-gray-500 font-bold mb-0.5">{fert.name_localized || fert.name}</span>
                                                             <span className={`text-xs font-black ${d ? 'text-gray-100' : 'text-gray-900'}`}>{fert.amount_kg} kg</span>
                                                         </div>
                                                     ))}
@@ -732,7 +754,7 @@ export default function CropAnalyzerDashboard() {
                                             {selectedCropData.top_similar_crops.map((crop, index) => (
                                                 <span key={index} className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${d ? 'bg-[#252636] border-pink-500/20 text-gray-200' : 'bg-white border-pink-100 text-gray-700 shadow-sm'
                                                     }`}>
-                                                    {getCropEmoji(crop)} {crop}
+                                                    {getCropEmoji(crop)} {selectedCropData.top_similar_crops_localized?.[index] || crop}
                                                 </span>
                                             ))}
                                         </div>
