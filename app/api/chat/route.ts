@@ -188,16 +188,19 @@ export async function POST(req: Request) {
         // 1) Embed query
         const qvec = await embed(userText);
 
-        // 2) Qdrant search (top 10 for richer context)
-        const searchRes = await qdrant.search(COLLECTION, {
-            vector: qvec,
-            limit: 10,
-        });
-
-        const retrieved = (searchRes || []).map(hit => ({
-            payload: hit.payload || hit,
-            score: hit.score || 0
-        }));
+        let retrieved: any[] = [];
+        try {
+            const searchRes = await qdrant.search(COLLECTION, {
+                vector: qvec,
+                limit: 10,
+            });
+            retrieved = (searchRes || []).map(hit => ({
+                payload: hit.payload || hit,
+                score: hit.score || 0
+            }));
+        } catch (e) {
+            console.error("Qdrant search error, continuing with empty context:", e);
+        }
 
         // 3) Fetch real-time weather context via Gemini
         const weatherContext = await getWeatherContext(location);

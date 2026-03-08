@@ -841,16 +841,24 @@ export default function CropAnalyzerDashboard() {
                         </section>
 
                         {/* Historical Data Reference */}
-                        {result.rag_used && result.rag_used.length > 0 && (
-                            <section className={`rounded-2xl shadow-sm border p-4 sm:p-6 transition-colors duration-300 ${d ? 'bg-[#252636] border-[#33344a]' : 'bg-white border-gray-200/60'}`}>
-                                <div className="flex items-center gap-2 mb-2">
+                        <section className={`rounded-2xl shadow-sm border p-4 sm:p-6 transition-colors duration-300 ${d ? 'bg-[#252636] border-[#33344a]' : 'bg-white border-gray-200/60'}`}>
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-2">
                                     <Info className="w-5 h-5 text-blue-600" />
                                     <h2 className={`text-lg sm:text-xl font-bold ${d ? 'text-gray-100' : 'text-gray-900'}`}>{t.dataReference}</h2>
                                 </div>
-                                <p className="text-xs text-gray-500 mb-4">
-                                    {t.dataReferenceDesc}
-                                </p>
+                                {(!result.rag_used || result.rag_used.length === 0) && (
+                                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200 uppercase tracking-wider">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-gray-400"></div>
+                                        Offline
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-xs text-gray-500 mb-4">
+                                {t.dataReferenceDesc}
+                            </p>
 
+                            {result.rag_used && result.rag_used.length > 0 ? (
                                 <div className="overflow-x-auto -mx-4 sm:mx-0">
                                     <div className="min-w-[600px] px-4 sm:px-0">
                                         <table className="w-full text-xs">
@@ -881,8 +889,18 @@ export default function CropAnalyzerDashboard() {
                                         </table>
                                     </div>
                                 </div>
-                            </section>
-                        )}
+                            ) : (
+                                <div className={`p-8 rounded-xl border-2 border-dashed flex flex-col items-center justify-center text-center ${d ? 'bg-[#1e1f2b]/50 border-[#33344a]' : 'bg-gray-50/50 border-gray-200'}`}>
+                                    <div className="mb-3 p-3 bg-gray-100 rounded-full">
+                                        <AlertCircle className="w-6 h-6 text-gray-400" />
+                                    </div>
+                                    <h4 className={`text-sm font-bold mb-1 ${d ? 'text-gray-300' : 'text-gray-700'}`}>Historical Data Unavailable</h4>
+                                    <p className={`text-xs max-w-sm ${d ? 'text-gray-500' : 'text-gray-500'}`}>
+                                        The AgriSense historical database is currently unreachable. Recommendations are being generated using AI expertise while we reconnect.
+                                    </p>
+                                </div>
+                            )}
+                        </section>
 
                         {/* Action Plan */}
                         <section className={`rounded-2xl shadow-sm border p-4 sm:p-6 transition-colors duration-300 ${d ? 'bg-[#252636] border-[#33344a]' : 'bg-white border-gray-200/60'}`}>

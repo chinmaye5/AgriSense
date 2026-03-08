@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Sprout, Send, RotateCcw, ArrowDown, Leaf, Droplets, Bug, Coins, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useLanguage } from '@/context/LanguageContext';
@@ -65,7 +65,7 @@ export default function AgricultureChat() {
 
     const formatAnswer = (text: string) => {
         const lines = text.split('\n');
-        const elements: JSX.Element[] = [];
+        const elements: React.JSX.Element[] = [];
         let i = 0;
 
         while (i < lines.length) {
