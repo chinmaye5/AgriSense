@@ -359,7 +359,7 @@ function CropAnalyzerContent() {
     };
 
     return (
-        <div className={`min-h-screen flex transition-colors duration-300 ${d ? 'bg-[#1e1f2b]' : 'bg-gray-50'}`}>
+        <div className={`h-screen flex overflow-hidden transition-colors duration-300 ${d ? 'bg-[#1e1f2b]' : 'bg-gray-50'}`}>
             <HistorySidebar 
                 type="graph" 
                 dark={d} 
@@ -369,7 +369,7 @@ function CropAnalyzerContent() {
                 onSelectAnalysis={handleSelectAnalysis}
                 onNew={handleNewAnalysis}
             />
-            <div className="flex-1 min-w-0 overflow-auto">
+            <div className="flex-1 min-w-0 overflow-y-auto">
             {/* Sticky Header */}
             <header className={`border-b backdrop-blur-md sticky top-0 z-50 transition-colors duration-300 ${d ? 'border-[#2e2f42] bg-[#252636]/90' : 'border-gray-200/60 bg-white/90'}`}>
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">

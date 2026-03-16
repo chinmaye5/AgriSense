@@ -356,7 +356,7 @@ function ChatContent() {
     if (!mounted) return null;
 
     return (
-        <div className={`h-screen flex transition-colors duration-300 ${theme.bg}`}>
+        <div className={`h-screen flex overflow-hidden transition-colors duration-300 ${theme.bg}`}>
             <HistorySidebar 
                 type="chat" 
                 dark={dark} 
