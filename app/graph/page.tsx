@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     PieChart, Pie, Cell, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Area, AreaChart
@@ -9,7 +9,11 @@ import { Sprout, Droplets, TrendingUp, DollarSign, Package, AlertCircle, Info, L
 import { useTheme } from '@/hooks/useTheme';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AuthButtons from '@/components/AuthButtons';
+import HistorySidebar from '@/components/HistorySidebar';
 import { translations } from '@/lib/translations';
+import { useUser } from '@clerk/nextjs';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 
 interface Recommendation {
@@ -52,9 +56,12 @@ function getCropEmoji(crop: string) {
     return '🌱';
 }
 
-export default function CropAnalyzerDashboard() {
+function CropAnalyzerContent() {
     const { dark, toggleTheme } = useTheme();
     const { t, language } = useLanguage();
+    const { isSignedIn } = useUser();
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const d = dark;
     const [formData, setFormData] = useState({
         location: '',
@@ -71,6 +78,75 @@ export default function CropAnalyzerDashboard() {
     const [selectedCrop, setSelectedCrop] = useState<number>(0);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [expandedCrops, setExpandedCrops] = useState<number[]>([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+    const [viewingHistoryTitle, setViewingHistoryTitle] = useState<string | null>(null);
+
+    // Load analysis from URL param
+    useEffect(() => {
+        const analysisId = searchParams.get('id');
+        if (analysisId) {
+            loadAnalysisById(analysisId);
+        }
+    }, [searchParams]);
+
+    const loadAnalysisById = async (id: string) => {
+        setLoadingHistory(true);
+        try {
+            const res = await fetch('/api/history');
+            const data = await res.json();
+            if (data.success) {
+                const analysis = data.analyses?.find((a: any) => a._id === id);
+                if (analysis) {
+                    loadAnalysisFromHistory(analysis);
+                }
+            }
+        } catch (err) {
+            console.error('Failed to load analysis:', err);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
+    const loadAnalysisFromHistory = (analysis: any) => {
+        // Restore form data
+        if (analysis.formData) {
+            setFormData(analysis.formData);
+        }
+        // Restore results
+        if (analysis.recommendations) {
+            setResult({
+                success: true,
+                recommendations: analysis.recommendations,
+                rag_used: analysis.ragUsed || [],
+            });
+            setSelectedCrop(0);
+        }
+        const title = analysis.formData?.location 
+            ? `${analysis.formData.location} - ${analysis.recommendations?.[0]?.recommended_crop || 'Analysis'}`
+            : 'Saved Analysis';
+        setViewingHistoryTitle(title);
+    };
+
+    const handleSelectAnalysis = (analysis: any) => {
+        loadAnalysisFromHistory(analysis);
+        router.push(`/graph?id=${analysis._id}`);
+    };
+
+    const handleNewAnalysis = () => {
+        setResult(null);
+        setFormData({
+            location: '',
+            size: '',
+            previously_grown: '',
+            budget: '',
+            soil_type: '',
+            water_source: '',
+            season: ''
+        });
+        setError('');
+        setViewingHistoryTitle(null);
+        router.push('/graph');
+    };
 
     const toggleExpand = (e: React.MouseEvent, idx: number) => {
         e.stopPropagation();
@@ -128,6 +204,66 @@ export default function CropAnalyzerDashboard() {
                 setResult(data);
                 setSelectedCrop(0);
                 setValidationErrors({});
+                setViewingHistoryTitle(null);
+
+                // Auto-save full analysis to history (includes all data needed to rebuild charts)
+                if (isSignedIn) {
+                    try {
+                        // Compute chart data to store alongside raw data
+                        const profitData = data.recommendations.map((rec: any) => ({
+                            name: rec.recommended_crop_localized || rec.recommended_crop,
+                            'Min Profit': rec.expected_profit_range_rs[0],
+                            'Max Profit': rec.expected_profit_range_rs[1],
+                            'Avg Profit': (rec.expected_profit_range_rs[0] + rec.expected_profit_range_rs[1]) / 2
+                        }));
+
+                        const nutrientData = data.recommendations.map((rec: any) => ({
+                            crop: rec.recommended_crop_localized || rec.recommended_crop,
+                            Nitrogen: rec.requirements.nitrogen_kg,
+                            Phosphorus: rec.requirements.phosphorus_kg,
+                            Potassium: rec.requirements.potassium_kg,
+                        }));
+
+                        const waterData = data.recommendations.map((rec: any) => ({
+                            crop: rec.recommended_crop_localized || rec.recommended_crop,
+                            'Daily Water (L)': rec.requirements.water_liters_per_day,
+                        }));
+
+                        const roiData = data.recommendations.map((rec: any) => {
+                            const avgProfit = (rec.expected_profit_range_rs[0] + rec.expected_profit_range_rs[1]) / 2;
+                            const roi = ((avgProfit - rec.estimated_budget_needed_rs) / rec.estimated_budget_needed_rs) * 100;
+                            return {
+                                crop: rec.recommended_crop_localized || rec.recommended_crop,
+                                'Investment (₹)': rec.estimated_budget_needed_rs,
+                                'Expected Profit (₹)': avgProfit,
+                                'ROI %': parseFloat(roi.toFixed(1))
+                            };
+                        });
+
+                        await fetch('/api/history', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                type: 'analysis',
+                                data: {
+                                    title: `${formData.location} - ${data.recommendations[0]?.recommended_crop || 'Analysis'}`,
+                                    formData: formData,
+                                    recommendations: data.recommendations,
+                                    ragUsed: data.rag_used,
+                                    // Store pre-computed chart data for full history restoration
+                                    chartData: {
+                                        profitComparison: profitData,
+                                        nutrientComparison: nutrientData,
+                                        waterRequirement: waterData,
+                                        roiAnalysis: roiData,
+                                    }
+                                },
+                            }),
+                        });
+                    } catch (saveErr) {
+                        console.error('Failed to save analysis:', saveErr);
+                    }
+                }
             } else {
                 setError(data.error || 'Failed to get recommendations');
             }
@@ -223,7 +359,17 @@ export default function CropAnalyzerDashboard() {
     };
 
     return (
-        <div className={`min-h-screen transition-colors duration-300 ${d ? 'bg-[#1e1f2b]' : 'bg-gray-50'}`}>
+        <div className={`min-h-screen flex transition-colors duration-300 ${d ? 'bg-[#1e1f2b]' : 'bg-gray-50'}`}>
+            <HistorySidebar 
+                type="graph" 
+                dark={d} 
+                onSelectChat={(chat) => {
+                    window.location.href = '/chat';
+                }}
+                onSelectAnalysis={handleSelectAnalysis}
+                onNew={handleNewAnalysis}
+            />
+            <div className="flex-1 min-w-0 overflow-auto">
             {/* Sticky Header */}
             <header className={`border-b backdrop-blur-md sticky top-0 z-50 transition-colors duration-300 ${d ? 'border-[#2e2f42] bg-[#252636]/90' : 'border-gray-200/60 bg-white/90'}`}>
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -244,6 +390,7 @@ export default function CropAnalyzerDashboard() {
                             <a href="/chat" className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${d ? 'text-gray-400 hover:text-green-400 hover:bg-[#2e2f42]' : 'text-gray-600 hover:text-green-700 hover:bg-green-50'}`}>{t.chat}</a>
                             <a href="/graph" className={`px-3 py-1.5 text-sm font-semibold rounded-lg ${d ? 'text-green-400 bg-green-900/30' : 'text-green-700 bg-green-50'}`}>{t.analysis}</a>
                         </nav>
+                        <AuthButtons dark={d} />
                         <a href="/chat" className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-green-700 hover:to-emerald-700 transition-all shadow-sm hover:shadow-md flex items-center gap-1.5">
                             <Zap className="w-3.5 h-3.5" />
                             <span className="hidden sm:inline">{t.askAi}</span>
@@ -251,6 +398,34 @@ export default function CropAnalyzerDashboard() {
                     </div>
                 </div>
             </header>
+
+            {/* History Loading Overlay */}
+            {loadingHistory && (
+                <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center">
+                    <div className={`p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3 ${d ? 'bg-[#252636]' : 'bg-white'}`}>
+                        <div className="w-8 h-8 border-3 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                        <p className={`text-sm font-medium ${d ? 'text-gray-300' : 'text-gray-600'}`}>Loading analysis...</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Viewing History Banner */}
+            {viewingHistoryTitle && (
+                <div className={`sticky top-0 z-30 px-4 py-2.5 flex items-center justify-between border-b ${d ? 'bg-green-900/20 border-green-500/20' : 'bg-green-50 border-green-200'}`}>
+                    <div className="flex items-center gap-2">
+                        <BarChart3 className={`w-4 h-4 ${d ? 'text-green-400' : 'text-green-600'}`} />
+                        <span className={`text-xs font-bold ${d ? 'text-green-400' : 'text-green-700'}`}>
+                            📂 Viewing saved: {viewingHistoryTitle}
+                        </span>
+                    </div>
+                    <button
+                        onClick={handleNewAnalysis}
+                        className={`text-xs font-bold px-3 py-1 rounded-lg transition-all ${d ? 'text-green-400 hover:bg-green-900/40' : 'text-green-700 hover:bg-green-100'}`}
+                    >
+                        ✕ New Analysis
+                    </button>
+                </div>
+            )}
 
             {/* Hero Section — Modern & Cohesive */}
             <div className={`relative overflow-hidden transition-colors duration-500 ${d ? 'bg-[#1e1f2b] border-b border-[#2e2f42]' : 'bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 border-b border-green-100/50'}`}>
@@ -965,6 +1140,19 @@ export default function CropAnalyzerDashboard() {
                     </p>
                 </div>
             </footer>
+            </div>
         </div>
+    );
+}
+
+export default function CropAnalyzerDashboard() {
+    return (
+        <Suspense fallback={
+            <div className="h-screen w-screen flex items-center justify-center bg-[#1e1f2b]">
+                <Sprout className="w-10 h-10 text-green-500 animate-pulse" />
+            </div>
+        }>
+            <CropAnalyzerContent />
+        </Suspense>
     );
 }

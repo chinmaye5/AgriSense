@@ -4,6 +4,7 @@ import { Sprout, Brain, Database, MapPin, TrendingUp, Leaf, CloudRain, Mountain,
 import { useTheme } from '@/hooks/useTheme';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import AuthButtons from '@/components/AuthButtons';
 
 export default function LandingPage() {
   const { dark, toggleTheme } = useTheme();
@@ -61,6 +62,7 @@ export default function LandingPage() {
               >
                 {d ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
               </button>
+              <AuthButtons dark={d} />
             </div>
           </div>
         </div>
