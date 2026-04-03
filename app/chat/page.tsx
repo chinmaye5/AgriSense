@@ -88,9 +88,9 @@ function ChatContent() {
 
     const SUGGESTIONS = [
         { icon: <Leaf className="w-4 h-4" />, title: t.features.location.title, desc: t.prevCropPlaceholder },
-        { icon: <Droplets className="w-4 h-4" />, title: t.waterSource, desc: "How to reduce water usage for sugarcane with drip irrigation?" },
-        { icon: <Bug className="w-4 h-4" />, title: "Pest management", desc: "Organic methods to control aphids on tomato plants?" },
-        { icon: <Coins className="w-4 h-4" />, title: "Government schemes", desc: "What subsidies are available for small farmers in India?" },
+        { icon: <Droplets className="w-4 h-4" />, title: t.waterSource, desc: t.features.weather.desc },
+        { icon: <Bug className="w-4 h-4" />, title: t.pestManagement || "Pest management", desc: t.pestManagementDesc || "Organic methods to control aphids on tomato plants?" },
+        { icon: <Coins className="w-4 h-4" />, title: t.govSchemes || "Government schemes", desc: t.govSchemesDesc || "What subsidies are available for small farmers in India?" },
     ];
 
     const scrollToBottom = () => {
@@ -360,6 +360,7 @@ function ChatContent() {
             <HistorySidebar 
                 type="chat" 
                 dark={dark} 
+                t={t}
                 onSelectChat={handleSelectChat}
                 onSelectAnalysis={(a) => {
                     window.location.href = `/graph?id=${a._id}`;
@@ -406,7 +407,7 @@ function ChatContent() {
                                     {/* Image Upload Prompt */}
                                     <div className={`flex items-center gap-2 mb-8 px-4 py-2.5 rounded-xl border transition-all ${dark ? 'bg-[#252636] border-[#33344a] text-gray-400' : 'bg-green-50 border-green-200 text-green-700'}`}>
                                         <Camera className="w-4 h-4" />
-                                        <span className="text-xs font-medium">📷 Upload crop images for instant disease analysis</span>
+                                        <span className="text-xs font-medium">📷 {t.uploadPrompt || 'Upload crop images for instant disease analysis'}</span>
                                     </div>
                                     
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-2xl text-left">
@@ -573,9 +574,9 @@ function ChatContent() {
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-                                    placeholder={imagePreview ? "Describe the issue or just send the image..." : "Message AgriSense AI..."}
                                     rows={1}
                                     className={`flex-1 max-h-48 min-h-[44px] py-3 px-4 resize-none bg-transparent outline-none text-sm ${theme.inputText}`}
+                                    placeholder={imagePreview ? (t.describeIssue || "Describe the issue or just send the image...") : (t.placeholder || "Message AgriSense AI...")}
                                 />
                                 <button 
                                     type="submit"

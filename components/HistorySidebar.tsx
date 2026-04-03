@@ -18,12 +18,13 @@ import { useUser } from '@clerk/nextjs';
 interface HistorySidebarProps {
     type: 'chat' | 'graph';
     dark: boolean;
+    t: any;
     onSelectChat?: (chat: any) => void;
     onSelectAnalysis?: (analysis: any) => void;
     onNew?: () => void;
 }
 
-export default function HistorySidebar({ type, dark, onSelectChat, onSelectAnalysis, onNew }: HistorySidebarProps) {
+export default function HistorySidebar({ type, dark, t, onSelectChat, onSelectAnalysis, onNew }: HistorySidebarProps) {
     const { user, isLoaded, isSignedIn } = useUser();
     const [history, setHistory] = useState<{ conversations: any[], analyses: any[] }>({ conversations: [], analyses: [] });
     const [loading, setLoading] = useState(false);
@@ -117,7 +118,7 @@ export default function HistorySidebar({ type, dark, onSelectChat, onSelectAnaly
             <button 
                 onClick={() => setIsOpen(true)}
                 className={`fixed left-3 top-3 z-50 p-2.5 rounded-xl border shadow-lg ${sidebarBg} ${borderColor} ${textSecondary} hover:text-green-500 transition-all`}
-                title="Open history"
+                title={t.sidebar?.openHistory || "Open history"}
             >
                 <Menu className="w-5 h-5" />
             </button>
@@ -151,7 +152,7 @@ export default function HistorySidebar({ type, dark, onSelectChat, onSelectAnaly
                         className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-dashed border-green-500/50 text-green-500 font-bold text-sm hover:bg-green-500/10 transition-all mr-2"
                     >
                         <Plus className="w-4 h-4" />
-                        New {type === 'chat' ? 'Chat' : 'Analysis'}
+                        {type === 'chat' ? (t.sidebar?.newChat || 'New Chat') : (t.sidebar?.newAnalysis || 'New Analysis')}
                     </button>
                     <button 
                         onClick={() => setIsOpen(false)}
@@ -168,7 +169,7 @@ export default function HistorySidebar({ type, dark, onSelectChat, onSelectAnaly
                         <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 ${textSecondary}`} />
                         <input 
                             type="text"
-                            placeholder="Search history..."
+                            placeholder={t.sidebar?.searchPlaceholder || "Search history..."}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className={`w-full pl-9 pr-3 py-2 rounded-lg text-xs outline-none border transition-all ${dark ? 'bg-[#13141f] border-[#2e2f42] text-gray-200 focus:border-green-500' : 'bg-white border-gray-200 focus:border-green-400'}`}
@@ -182,13 +183,13 @@ export default function HistorySidebar({ type, dark, onSelectChat, onSelectAnaly
                     <div>
                         <div className={`px-3 mb-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${textSecondary}`}>
                             <MessageSquare className="w-3 h-3" />
-                            Conversations
+                            {t.sidebar?.conversations || "Conversations"}
                         </div>
                         <div className="space-y-0.5">
                             {loading && history.conversations.length === 0 ? (
                                 <div className="px-3 py-4 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-green-500" /></div>
                             ) : filteredConversations.length === 0 ? (
-                                <div className={`px-3 py-2 text-[11px] italic ${textSecondary}`}>No chats found</div>
+                                <div className={`px-3 py-2 text-[11px] italic ${textSecondary}`}>{t.sidebar?.noChats || "No chats found"}</div>
                             ) : (
                                 filteredConversations.map((convo) => (
                                     <div 
@@ -197,7 +198,7 @@ export default function HistorySidebar({ type, dark, onSelectChat, onSelectAnaly
                                         className={`group relative px-3 py-2.5 rounded-lg cursor-pointer transition-all ${hoverBg} ${type === 'chat' ? 'border border-transparent' : ''}`}
                                     >
                                         <div className={`text-xs font-semibold truncate pr-6 ${textPrimary}`}>
-                                            {convo.title || 'Untitled Chat'}
+                                            {convo.title || (t.history?.untitled || 'Untitled Chat')}
                                         </div>
                                         <div className="flex items-center gap-2 mt-1">
                                             <Clock className="w-2.5 h-2.5 opacity-40" />
@@ -219,13 +220,13 @@ export default function HistorySidebar({ type, dark, onSelectChat, onSelectAnaly
                     <div>
                         <div className={`px-3 mb-2 flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${textSecondary}`}>
                             <BarChart3 className="w-3 h-3" />
-                            Crop Analyses
+                            {t.sidebar?.analyses || "Crop Analyses"}
                         </div>
                         <div className="space-y-0.5">
                             {loading && history.analyses.length === 0 ? (
                                 <div className="px-3 py-4 flex justify-center"><Loader2 className="w-4 h-4 animate-spin text-green-500" /></div>
                             ) : filteredAnalyses.length === 0 ? (
-                                <div className={`px-3 py-2 text-[11px] italic ${textSecondary}`}>No analyses found</div>
+                                <div className={`px-3 py-2 text-[11px] italic ${textSecondary}`}>{t.sidebar?.noAnalyses || "No analyses found"}</div>
                             ) : (
                                 filteredAnalyses.map((analysis) => (
                                     <div 
@@ -238,7 +239,7 @@ export default function HistorySidebar({ type, dark, onSelectChat, onSelectAnaly
                                         </div>
                                         <div className="flex items-center gap-1.5 mt-1 overflow-hidden">
                                             <span className={`text-[9px] px-1 py-0.5 rounded ${dark ? 'bg-green-900/40 text-green-400' : 'bg-green-50 text-green-700'}`}>
-                                                {analysis.formData?.size || analysis.input?.size || '?'} acres
+                                                {analysis.formData?.size || analysis.input?.size || '?'} {t.history?.acres || 'acres'}
                                             </span>
                                             {analysis.formData?.season && (
                                                 <>
@@ -267,7 +268,7 @@ export default function HistorySidebar({ type, dark, onSelectChat, onSelectAnaly
                 {/* Footer User Info */}
                 {!isSignedIn && (
                     <div className={`flex-shrink-0 p-4 border-t ${borderColor}`}>
-                        <p className={`text-[10px] text-center italic ${textSecondary}`}>Sign in to sync your history across devices</p>
+                        <p className={`text-[10px] text-center italic ${textSecondary}`}>{t.sidebar?.signInToSync || "Sign in to sync your history across devices"}</p>
                     </div>
                 )}
             </aside>

@@ -1,6 +1,6 @@
 'use client';
 
-import { Sprout, Brain, Database, MapPin, TrendingUp, Leaf, CloudRain, Mountain, ArrowRight, Moon, Sun, Sparkles, ChevronRight, Zap, Users } from 'lucide-react';
+import { Sprout, Brain, Database, MapPin, TrendingUp, Leaf, CloudRain, Mountain, ArrowRight, Moon, Sun, Sparkles, ChevronRight, Zap, Users, Phone } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -174,6 +174,69 @@ export default function LandingPage() {
                 <p className="text-[11px] font-black uppercase tracking-wider text-gray-500">{dp.items}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* AI Voice Support Section */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-32">
+          <div className={`relative rounded-[3rem] overflow-hidden p-8 sm:p-20 border transition-all ${d ? 'bg-[#252636] border-white/5' : 'bg-white border-gray-100 shadow-xl shadow-gray-200/50'}`}>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 blur-[80px]"></div>
+
+            <div className="flex flex-col lg:flex-row items-center gap-12 sm:gap-20 relative z-10">
+              <div className="flex-1 text-center lg:text-left">
+                <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6 ${d ? 'bg-blue-500/10 text-blue-400' : 'bg-blue-50 text-blue-700'}`}>
+                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                  Live AI Agent on call without internet
+                </div>
+                <h2 className={`text-3xl sm:text-5xl font-black mb-6 ${d ? 'text-white' : 'text-gray-900'}`}>{t.voiceSupport?.title || '24/7 AI Voice Support'}</h2>
+                <p className={`text-lg leading-relaxed mb-10 ${d ? 'text-gray-400' : 'text-gray-600'}`}>
+                  {t.voiceSupport?.desc || 'Get instant assistance from our AI voice agent. Call us anytime for expert farming advice.'}
+                </p>
+
+                <div className="flex flex-col sm:flex-row items-center gap-6">
+                  <a
+                    href={`tel:${t.voiceSupport?.number || '+1 260-529-7403'}`}
+                    className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-lg shadow-2xl shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all text-center flex items-center justify-center gap-3"
+                  >
+                    <Phone className="w-5 h-5 fill-current" />
+                    {t.voiceSupport?.callNow || 'Call Now'}
+                  </a>
+                  <div className="flex flex-col items-center sm:items-start">
+                    <span className={`text-xl font-black ${d ? 'text-white' : 'text-gray-900'}`}>{t.voiceSupport?.number || '+1 260-529-7403'}</span>
+                    <span className={`text-xs font-bold uppercase tracking-widest ${d ? 'text-gray-500' : 'text-gray-400'}`}>Toll-Free Support</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex-1 relative flex justify-center">
+                <div className={`w-64 h-64 sm:w-80 sm:h-80 rounded-full flex items-center justify-center relative ${d ? 'bg-blue-500/5' : 'bg-blue-50'}`}>
+                  {/* Decorative Rings */}
+                  <div className={`absolute inset-0 rounded-full border-2 border-dashed ${d ? 'border-blue-500/20' : 'border-blue-200'} animate-spin-slow`}></div>
+                  <div className={`absolute inset-4 rounded-full border border-dashed ${d ? 'border-blue-500/10' : 'border-blue-100'} animate-reverse-spin`}></div>
+
+                  {/* Voice Wave Animation */}
+                  <div className="flex items-end gap-1.5 h-20">
+                    {[0, 1, 2, 3, 4, 3, 2, 1, 0].map((h, i) => (
+                      <div
+                        key={i}
+                        className="w-2 bg-gradient-to-t from-blue-600 to-indigo-500 rounded-full animate-voice-wave"
+                        style={{ height: `${20 + h * 15}%`, animationDelay: `${i * 0.1}s` }}
+                      ></div>
+                    ))}
+                  </div>
+
+                  <div className={`absolute -bottom-4 bg-white dark:bg-[#1a1b26] p-4 rounded-2xl shadow-xl border ${d ? 'border-blue-500/20' : 'border-blue-100'} flex items-center gap-3`}>
+                    <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+                      <Zap className="w-5 h-5 text-white fill-current" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className={`text-[10px] font-black uppercase tracking-wider ${d ? 'text-gray-400' : 'text-gray-500'}`}>Response Time</span>
+                      <span className={`text-xs font-bold ${d ? 'text-white' : 'text-gray-900'}`}>Instant ( &lt; 1s )</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 

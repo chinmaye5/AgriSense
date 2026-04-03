@@ -105,9 +105,9 @@ export default function HistoryPage() {
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const days = Math.floor(hours / 24);
 
-        if (hours < 1) return 'Just now';
-        if (hours < 24) return `${hours}h ago`;
-        if (days < 7) return `${days}d ago`;
+        if (hours < 1) return t.history?.justNow || 'Just now';
+        if (hours < 24) return `${hours}${t.history?.hoursAgo || 'h ago'}`;
+        if (days < 7) return `${days}${t.history?.daysAgo || 'd ago'}`;
         return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
     };
 
@@ -134,7 +134,7 @@ export default function HistoryPage() {
                             </span>
                         </a>
                         <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${d ? 'bg-[#2e2f42] text-gray-400' : 'bg-gray-100 text-gray-500'}`}>
-                            History
+                            {t.history?.title || 'History'}
                         </span>
                     </div>
                     <div className="flex items-center gap-2 sm:gap-4">
@@ -145,7 +145,7 @@ export default function HistoryPage() {
                         <nav className="hidden sm:flex items-center gap-1">
                             <a href="/chat" className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${d ? 'text-gray-400 hover:text-green-400 hover:bg-[#2e2f42]' : 'text-gray-600 hover:text-green-700 hover:bg-green-50'}`}>{t.chat}</a>
                             <a href="/graph" className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${d ? 'text-gray-400 hover:text-green-400 hover:bg-[#2e2f42]' : 'text-gray-600 hover:text-green-700 hover:bg-green-50'}`}>{t.analysis}</a>
-                            <a href="/history" className={`px-3 py-1.5 text-sm font-semibold rounded-lg ${d ? 'text-green-400 bg-green-900/30' : 'text-green-700 bg-green-50'}`}>History</a>
+                            <a href="/history" className={`px-3 py-1.5 text-sm font-semibold rounded-lg ${d ? 'text-green-400 bg-green-900/30' : 'text-green-700 bg-green-50'}`}>{t.history?.title || 'History'}</a>
                         </nav>
                     </div>
                 </div>
@@ -156,15 +156,15 @@ export default function HistoryPage() {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 className={`text-3xl sm:text-4xl font-black tracking-tight ${d ? 'text-white' : 'text-gray-900'}`}>
-                            Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">History</span>
+                            {t.history?.title_part1 || 'Your'} <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">{t.history?.title_part2 || 'History'}</span>
                         </h1>
                         <p className={`text-sm mt-1 ${d ? 'text-gray-500' : 'text-gray-500'}`}>
-                            Past conversations and crop analyses saved to your account
+                            {t.history?.subtitle || 'Past conversations and crop analyses saved to your account'}
                         </p>
                     </div>
                     <a href="/chat" className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl text-sm font-bold hover:from-green-700 hover:to-emerald-700 transition-all shadow-sm">
                         <MessageSquare className="w-4 h-4" />
-                        New Chat
+                        {t.newChat}
                     </a>
                 </div>
 
@@ -174,7 +174,7 @@ export default function HistoryPage() {
                         <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${d ? 'text-gray-500' : 'text-gray-400'}`} />
                         <input
                             type="text"
-                            placeholder="Search history..."
+                            placeholder={t.history?.searchHeader || "Search history..."}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className={`w-full pl-10 pr-4 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 outline-none transition-all ${d ? 'bg-[#252636] border-[#33344a] text-gray-200 placeholder-gray-500' : 'bg-white border-gray-200 placeholder-gray-400'}`}
@@ -189,7 +189,7 @@ export default function HistoryPage() {
                                 }`}
                         >
                             <MessageSquare className="w-4 h-4" />
-                            Chats
+                            {t.history?.chatTab || 'Chats'}
                             <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${activeTab === 'conversations' ? d ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700' : d ? 'bg-[#33344a] text-gray-500' : 'bg-gray-100 text-gray-400'}`}>
                                 {conversations.length}
                             </span>
@@ -202,7 +202,7 @@ export default function HistoryPage() {
                                 }`}
                         >
                             <BarChart3 className="w-4 h-4" />
-                            Analyses
+                            {t.history?.analysisTab || 'Analyses'}
                             <span className={`text-[10px] px-1.5 py-0.5 rounded-md ${activeTab === 'analyses' ? d ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-700' : d ? 'bg-[#33344a] text-gray-500' : 'bg-gray-100 text-gray-400'}`}>
                                 {analyses.length}
                             </span>
@@ -214,7 +214,7 @@ export default function HistoryPage() {
                 {loading && (
                     <div className="flex flex-col items-center justify-center py-20 gap-3">
                         <Loader2 className="w-8 h-8 animate-spin text-green-500" />
-                        <p className={`text-sm ${d ? 'text-gray-500' : 'text-gray-400'}`}>Loading your history...</p>
+                        <p className={`text-sm ${d ? 'text-gray-500' : 'text-gray-400'}`}>{t.history?.loading || 'Loading your history...'}</p>
                     </div>
                 )}
 
@@ -224,10 +224,10 @@ export default function HistoryPage() {
                         {filteredConversations.length === 0 ? (
                             <div className={`text-center py-20 rounded-2xl border ${d ? 'bg-[#252636] border-[#33344a]' : 'bg-white border-gray-100'}`}>
                                 <MessageSquare className={`w-12 h-12 mx-auto mb-4 ${d ? 'text-gray-600' : 'text-gray-300'}`} />
-                                <h3 className={`text-lg font-bold mb-2 ${d ? 'text-gray-300' : 'text-gray-700'}`}>No conversations yet</h3>
-                                <p className={`text-sm mb-6 ${d ? 'text-gray-500' : 'text-gray-400'}`}>Start chatting with AgriSense AI to see your history here</p>
+                                <h3 className={`text-lg font-bold mb-2 ${d ? 'text-gray-300' : 'text-gray-700'}`}>{t.history?.noChats || 'No conversations yet'}</h3>
+                                <p className={`text-sm mb-6 ${d ? 'text-gray-500' : 'text-gray-400'}`}>{t.history?.noChatsDesc || 'Start chatting with AgriSense AI to see your history here'}</p>
                                 <a href="/chat" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl text-sm font-bold hover:from-green-700 hover:to-emerald-700 transition-all">
-                                    Start a Chat <ChevronRight className="w-4 h-4" />
+                                    {t.history?.startChat || 'Start a Chat'} <ChevronRight className="w-4 h-4" />
                                 </a>
                             </div>
                         ) : (
@@ -247,7 +247,7 @@ export default function HistoryPage() {
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <h3 className={`text-sm font-bold truncate ${d ? 'text-gray-100' : 'text-gray-900'}`}>
-                                                    {convo.title || 'Untitled Chat'}
+                                                    {convo.title || (t.history?.untitled || 'Untitled Chat')}
                                                 </h3>
                                                 <div className="flex items-center gap-2 mt-0.5">
                                                     <Clock className={`w-3 h-3 ${d ? 'text-gray-600' : 'text-gray-400'}`} />
@@ -255,7 +255,7 @@ export default function HistoryPage() {
                                                         {formatDate(convo.updatedAt || convo.createdAt)}
                                                     </span>
                                                     <span className={`text-[10px] px-1.5 py-0.5 rounded ${d ? 'bg-[#33344a] text-gray-500' : 'bg-gray-100 text-gray-400'}`}>
-                                                        {convo.messages?.length || 0} msgs
+                                                        {convo.messages?.length || 0} {t.history?.msgs || 'msgs'}
                                                     </span>
                                                 </div>
                                             </div>
@@ -288,7 +288,7 @@ export default function HistoryPage() {
                                                 ))}
                                                 {convo.messages.length > 10 && (
                                                     <p className={`text-center text-[11px] py-2 ${d ? 'text-gray-600' : 'text-gray-400'}`}>
-                                                        +{convo.messages.length - 10} more messages
+                                                        +{convo.messages.length - 10} {t.history?.moreMsgs || 'more messages'}
                                                     </p>
                                                 )}
                                             </div>
@@ -306,10 +306,10 @@ export default function HistoryPage() {
                         {filteredAnalyses.length === 0 ? (
                             <div className={`text-center py-20 rounded-2xl border ${d ? 'bg-[#252636] border-[#33344a]' : 'bg-white border-gray-100'}`}>
                                 <BarChart3 className={`w-12 h-12 mx-auto mb-4 ${d ? 'text-gray-600' : 'text-gray-300'}`} />
-                                <h3 className={`text-lg font-bold mb-2 ${d ? 'text-gray-300' : 'text-gray-700'}`}>No analyses yet</h3>
-                                <p className={`text-sm mb-6 ${d ? 'text-gray-500' : 'text-gray-400'}`}>Run a crop analysis to see your saved results here</p>
+                                <h3 className={`text-lg font-bold mb-2 ${d ? 'text-gray-300' : 'text-gray-700'}`}>{t.history?.noAnalyses || 'No analyses yet'}</h3>
+                                <p className={`text-sm mb-6 ${d ? 'text-gray-500' : 'text-gray-400'}`}>{t.history?.noAnalysesDesc || 'Run a crop analysis to see your saved results here'}</p>
                                 <a href="/graph" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl text-sm font-bold hover:from-green-700 hover:to-emerald-700 transition-all">
-                                    Run Analysis <ChevronRight className="w-4 h-4" />
+                                    {t.history?.runAnalysis || 'Run Analysis'} <ChevronRight className="w-4 h-4" />
                                 </a>
                             </div>
                         ) : (
@@ -329,7 +329,7 @@ export default function HistoryPage() {
                                             </div>
                                             <div className="min-w-0 flex-1">
                                                 <h3 className={`text-sm font-bold truncate ${d ? 'text-gray-100' : 'text-gray-900'}`}>
-                                                    📍 {analysis.input?.location || 'Unknown Location'} — {analysis.input?.size || '?'} acres
+                                                    📍 {analysis.input?.location || (t.history?.unknownLocation || 'Unknown Location')} — {analysis.input?.size || '?'} {t.history?.acres || 'acres'}
                                                 </h3>
                                                 <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                                                     <Clock className={`w-3 h-3 ${d ? 'text-gray-600' : 'text-gray-400'}`} />
@@ -363,12 +363,12 @@ export default function HistoryPage() {
                                                 {/* Input details */}
                                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
                                                     {[
-                                                        { label: 'Location', value: analysis.input?.location },
-                                                        { label: 'Land Size', value: `${analysis.input?.size} acres` },
-                                                        { label: 'Soil', value: analysis.input?.soil_type },
-                                                        { label: 'Season', value: analysis.input?.season },
-                                                        { label: 'Water', value: analysis.input?.water_source },
-                                                        { label: 'Budget', value: `₹${Number(analysis.input?.budget || 0).toLocaleString()}` },
+                                                        { label: t.location || 'Location', value: analysis.input?.location },
+                                                        { label: t.landSize?.split('(')[0].trim() || 'Land Size', value: `${analysis.input?.size} ${t.history?.acres || 'acres'}` },
+                                                        { label: t.soilType || 'Soil', value: analysis.input?.soil_type },
+                                                        { label: t.season || 'Season', value: analysis.input?.season },
+                                                        { label: t.waterSource || 'Water', value: analysis.input?.water_source },
+                                                        { label: t.budget?.split('(')[0].trim() || 'Budget', value: `₹${Number(analysis.input?.budget || 0).toLocaleString()}` },
                                                     ].filter(item => item.value).map((item, idx) => (
                                                         <div key={idx} className={`p-2.5 rounded-xl border ${d ? 'bg-[#1e1f2b] border-[#33344a]' : 'bg-gray-50 border-gray-100'}`}>
                                                             <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block">{item.label}</span>
@@ -390,8 +390,8 @@ export default function HistoryPage() {
                                                                     </span>
                                                                 </div>
                                                                 <div className="flex gap-3 text-[11px]">
-                                                                    <span className={d ? 'text-blue-400' : 'text-blue-600'}>Yield: {(rec.expected_output_kg || 0).toLocaleString()} kg</span>
-                                                                    <span className={d ? 'text-green-400' : 'text-green-600'}>Profit: ₹{avgProfit.toLocaleString()}</span>
+                                                                    <span className={d ? 'text-blue-400' : 'text-blue-600'}>{t.yield || 'Yield'}: {(rec.expected_output_kg || 0).toLocaleString()} kg</span>
+                                                                    <span className={d ? 'text-green-400' : 'text-green-600'}>{t.profit || 'Profit'}: ₹{avgProfit.toLocaleString()}</span>
                                                                 </div>
                                                             </div>
                                                         );

@@ -363,6 +363,7 @@ function CropAnalyzerContent() {
             <HistorySidebar 
                 type="graph" 
                 dark={d} 
+                t={t}
                 onSelectChat={(chat) => {
                     window.location.href = '/chat';
                 }}
@@ -415,14 +416,14 @@ function CropAnalyzerContent() {
                     <div className="flex items-center gap-2">
                         <BarChart3 className={`w-4 h-4 ${d ? 'text-green-400' : 'text-green-600'}`} />
                         <span className={`text-xs font-bold ${d ? 'text-green-400' : 'text-green-700'}`}>
-                            📂 Viewing saved: {viewingHistoryTitle}
+                            📂 {t.history?.loadSaved || 'Viewing saved'}: {viewingHistoryTitle}
                         </span>
                     </div>
                     <button
                         onClick={handleNewAnalysis}
                         className={`text-xs font-bold px-3 py-1 rounded-lg transition-all ${d ? 'text-green-400 hover:bg-green-900/40' : 'text-green-700 hover:bg-green-100'}`}
                     >
-                        ✕ New Analysis
+                        ✕ {t.sidebar?.newAnalysis || 'New Analysis'}
                     </button>
                 </div>
             )}

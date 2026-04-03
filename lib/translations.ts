@@ -22,6 +22,13 @@ export const translations = {
         thinking: "Thinking...",
         howCanIHelp: "How can I help you today?",
         chatDesc: "Ask me anything about crops, farming, soil, pests, irrigation, market prices, or government schemes.",
+        placeholder: "Message AgriSense AI...",
+        describeIssue: "Describe the issue or just send the image...",
+        uploadPrompt: "Upload crop images for instant disease analysis",
+        pestManagement: "Pest Management",
+        pestManagementDesc: "Organic methods to control aphids on tomato plants?",
+        govSchemes: "Government Schemes",
+        govSchemesDesc: "What subsidies are available for small farmers in India?",
         footerWarning: "AgriSense AI can make mistakes. Verify important farming decisions with local experts.",
 
         // Landing Page
@@ -56,6 +63,50 @@ export const translations = {
             desc: "Join thousands of farmers making data-driven decisions",
             button: "Start Your Free Analysis"
         },
+        voiceSupport: {
+            title: "24/7 AI Voice Support",
+            desc: "Get instant assistance from our AI voice agent. Call us anytime for expert farming advice.",
+            callNow: "Call Now",
+            number: "+1 260-529-7403"
+        },
+        sidebar: {
+            newChat: "New Chat",
+            newAnalysis: "New Analysis",
+            searchPlaceholder: "Search history...",
+            conversations: "Conversations",
+            analyses: "Crop Analyses",
+            noChats: "No chats found",
+            noAnalyses: "No analyses found",
+            signInToSync: "Sign in to sync your history across devices",
+            openHistory: "Open history"
+        },
+        history: {
+            title: "Your History",
+            title_part1: "Your",
+            title_part2: "History",
+            subtitle: "Past conversations and crop analyses saved to your account",
+            chatTab: "Chats",
+            analysisTab: "Analyses",
+            noChats: "No conversations yet",
+            noChatsDesc: "Start chatting with AgriSense AI to see your history here",
+            noAnalyses: "No analyses yet",
+            noAnalysesDesc: "Run a crop analysis to see your saved results here",
+            loading: "Loading your history...",
+            untitled: "Untitled Chat",
+            msgs: "msgs",
+            moreMsgs: "more messages",
+            acres: "acres",
+            justNow: "Just now",
+            hoursAgo: "h ago",
+            daysAgo: "d ago",
+            items: "items",
+            loadSaved: "Viewing saved",
+            searchHeader: "Search history...",
+            startChat: "Start a Chat",
+            runAnalysis: "Run Analysis",
+            unknownLocation: "Unknown Location"
+        },
+        activeReport: "Active Report",
 
         // Analysis Form
         farmDetails: "Farm Details",
@@ -140,9 +191,16 @@ export const translations = {
         chat: "चैट",
         analysis: "विश्लेषण",
         newChat: "नई चैट",
-        thinking: "सोच रहा है...",
+        thinking: "सोच रहा हूँ...",
         howCanIHelp: "मैं आज आपकी कैसे सहायता कर सकता हूँ?",
         chatDesc: "फसलों, खेती, मिट्टी, कीटों, सिंचाई, बाजार मूल्यों या सरकारी योजनाओं के बारे में मुझसे कुछ भी पूछें।",
+        placeholder: "AgriSense AI को संदेश भेजें...",
+        describeIssue: "समस्या का वर्णन करें या बस छवि भेजें...",
+        uploadPrompt: "त्वरित रोग विश्लेषण के लिए फसल की छवियां अपलोड करें",
+        pestManagement: "कीट प्रबंधन",
+        pestManagementDesc: "टमाटर के पौधों पर एफिड्स को नियंत्रित करने के जैविक तरीके?",
+        govSchemes: "सरकारी योजनाएं",
+        govSchemesDesc: "भारत में छोटे किसानों के लिए कौन सी सब्सिडी उपलब्ध हैं?",
         footerWarning: "AgriSense AI गलतियां कर सकता है। महत्वपूर्ण कृषि निर्णय स्थानीय विशेषज्ञों के साथ सत्यापित करें।",
 
         // Landing Page
@@ -177,6 +235,50 @@ export const translations = {
             desc: "डेटा-आधारित निर्णय लेने वाले हजारों किसानों से जुड़ें",
             button: "अपना निःशुल्क विश्लेषण शुरू करें"
         },
+        voiceSupport: {
+            title: "24/7 AI वॉइस सपोर्ट",
+            desc: "हमारे AI वॉइस एजेंट से तुरंत सहायता प्राप्त करें। विशेषज्ञ कृषि सलाह के लिए हमें कभी भी कॉल करें।",
+            callNow: "अभी कॉल करें",
+            number: "+1 260-529-7403"
+        },
+        sidebar: {
+            newChat: "नई चैट",
+            newAnalysis: "नया विश्लेषण",
+            searchPlaceholder: "इतिहास खोजें...",
+            conversations: "बातचीत",
+            analyses: "फसल विश्लेषण",
+            noChats: "कोई चैट नहीं मिली",
+            noAnalyses: "कोई विश्लेषण नहीं मिला",
+            signInToSync: "इतिहास सिंक करने के लिए साइन इन करें",
+            openHistory: "इतिहास खोलें"
+        },
+        history: {
+            title: "आपका इतिहास",
+            title_part1: "आपका",
+            title_part2: "इतिहास",
+            subtitle: "आपके खाते में सहेजी गई पिछली बातचीत और फसल विश्लेषण",
+            chatTab: "चैट",
+            analysisTab: "विश्लेषण",
+            noChats: "अभी तक कोई बातचीत नहीं",
+            noChatsDesc: "यहां अपना इतिहास देखने के लिए AgriSense AI के साथ चैट शुरू करें",
+            noAnalyses: "अभी तक कोई विश्लेषण नहीं",
+            noAnalysesDesc: "यहां अपने सहेजे गए परिणाम देखने के लिए फसल विश्लेषण चलाएं",
+            loading: "आपका इतिहास लोड हो रहा है...",
+            untitled: "बिना शीर्षक वाली चैट",
+            msgs: "संदेश",
+            moreMsgs: "और संदेश",
+            acres: "एकड़",
+            justNow: "अभी",
+            hoursAgo: "घंटे पहले",
+            daysAgo: "दिन पहले",
+            items: "आइटम",
+            loadSaved: "सहेजा गया देख रहे हैं",
+            searchHeader: "इतिहास खोजें...",
+            startChat: "चैट शुरू करें",
+            runAnalysis: "विश्लेषण चलाएं",
+            unknownLocation: "अज्ञात स्थान"
+        },
+        activeReport: "सक्रिय रिपोर्ट",
 
         // Analysis Form
         farmDetails: "खेत का विवरण",
@@ -264,6 +366,13 @@ export const translations = {
         thinking: "विचार करत आहे...",
         howCanIHelp: "मी आज तुम्हाला कशी मदत करू शकतो?",
         chatDesc: "पिके, शेती, माती, कीड, सिंचन, बाजारभाव किंवा सरकारी योजनांबद्दल मला काहीही विचारा.",
+        placeholder: "AgriSense AI ला संदेश द्या...",
+        describeIssue: "समस्येचे वर्णन करा किंवा फक्त प्रतिमा पाठवा...",
+        uploadPrompt: "त्वरीत रोग विश्लेषणासाठी पिकाची चित্রে अपलोड करा",
+        pestManagement: "कीड व्यवस्थापन",
+        pestManagementDesc: "टोमॅटोच्या रोपांवरील मावा (aphids) नियंत्रित करण्याचे सेंद्रिय मार्ग?",
+        govSchemes: "सरकारी योजना",
+        govSchemesDesc: "भारतातील अल्पभूधारक शेतकऱ्यांसाठी कोणती अनुदाने उपलब्ध आहेत?",
         footerWarning: "AgriSense AI चुका करू शकते. महत्त्वाचे शेतीविषयक निर्णय स्थानिक तज्ञांकडून तपासून घ्या.",
 
         // Landing Page
@@ -296,8 +405,52 @@ export const translations = {
         cta: {
             title: "तुमची पीक निवड सुधारण्यासाठी तयार आहात?",
             desc: "डेटा-आधारित निर्णय घेणाऱ्या हजारो शेतकऱ्यांशी जोडा",
-            button: "तुमचे विनामूल्य विश्लेषण सुरू करा"
+            button: "तुमचे विनामूल્ય विश्लेषण सुरू करा"
         },
+        voiceSupport: {
+            title: "24/7 AI व्हॉઇસ सपोर्ट",
+            desc: "आमच्या AI व्हॉઇસ एजंटकडून त्वरित मदत मिळवा. तज्ञ शेती सल्ल्यासाठी आम्हाला कधीही कॉल करा.",
+            callNow: "आતા कॉल करा",
+            number: "+1 260-529-7403"
+        },
+        sidebar: {
+            newChat: "नवीन चॅट",
+            newAnalysis: "नवीन विश्लेषण",
+            searchPlaceholder: "इतिहास शोधा...",
+            conversations: "संभाषणे",
+            analyses: "पीक विश्लेषण",
+            noChats: "कोणतीही चॅट सापडली नाही",
+            noAnalyses: "कोणतेही विश्लेषण सापडले नाही",
+            signInToSync: "तुमचा इतिहास सर्व डिव्हाइसवर सिंक करण्यासाठी साइन इन करा",
+            openHistory: "इतिहास उघडा"
+        },
+        history: {
+            title: "तुमचा इतिहास",
+            title_part1: "तुमचा",
+            title_part2: "इतिहास",
+            subtitle: "तुमच्या खात्यावर जतन केलेली मागील संभाषणे आणि पीक विश्लेषण",
+            chatTab: "चॅट्स",
+            analysisTab: "विश्लेषण",
+            noChats: "अजून कोणतेही संभाषण नाही",
+            noChatsDesc: "तुमचा इतिहास येथे पाहण्यासाठी AgriSense AI सोबत चॅटिंग सुरू करा",
+            noAnalyses: "अजून कोणतेही विश्लेषण नाही",
+            noAnalysesDesc: "तुमचे जतन केलेले परिणाम येथे पाहण्यासाठी पीक विश्लेषण चालवा",
+            loading: "तुमचा इतिहास लोड होत आहे...",
+            untitled: "शीर्षक नसलेली चॅट",
+            msgs: "संदेश",
+            moreMsgs: "आणखी संदेश",
+            acres: "एकर",
+            justNow: "आत्ताच",
+            hoursAgo: "तासापूर्वी",
+            daysAgo: "दिवसापूर्वी",
+            items: "आयटम्स",
+            loadSaved: "जतन केलेले पाहत आहे",
+            searchHeader: "इतिहास शोधा...",
+            startChat: "चॅट सुरू करा",
+            runAnalysis: "विश्लेषण चालवा",
+            unknownLocation: "अज्ञात स्थान"
+        },
+        activeReport: "सक्रिय अहवाल",
 
         // Analysis Form
         farmDetails: "शेताचा तपशील",
@@ -385,6 +538,13 @@ export const translations = {
         thinking: "ఆలోచిస్తోంది...",
         howCanIHelp: "నేను ఈరోజు మీకు ఎలా సహాయపడగలను?",
         chatDesc: "పంటలు, వ్యవసాయం, నేల, తెగుళ్లు, నీటిపారుదల, మార్కెట్ ధరలు లేదా ప్రభుత్వ పథకాల గురించి నన్ను ఏదైనా అడగండి.",
+        placeholder: "AgriSense AI కి సందేశం పంపండి...",
+        describeIssue: "సమస్యను వివరించండి లేదా చిత్రాన్ని పంపండి...",
+        uploadPrompt: "తక్షణ వ్యాధి విశ్లేషణ కోసం పంట చిత్రాలను అప్‌లోడ్ చేయండి",
+        pestManagement: "తెగుళ్ల నిర్వహణ",
+        pestManagementDesc: "టమోటా మొక్కలపై పేనుబంకను నియంత్రించడానికి సేంద్రీయ పద్ధతులు?",
+        govSchemes: "ప్రభుత్వ పథకాలు",
+        govSchemesDesc: "భారతదేశంలో చిన్న రైతులకు ఏ సబ్సిడీలు అందుబాటులో ఉన్నాయి?",
         footerWarning: "AgriSense AI తప్పులు చేయవచ్చు. ముఖ్యమైన వ్యవసాయ నిర్ణయాలను స్థానిక నిపుణులతో ధృవీకరించుకోండి.",
 
         // Landing Page
@@ -419,6 +579,50 @@ export const translations = {
             desc: "డేటా ఆధారిత నిర్ణయాలు తీసుకుంటున్న వేలాది మంది రైతులతో చేరండి",
             button: "మీ ఉచిత విశ్లేషణను ప్రారంభించండి"
         },
+        voiceSupport: {
+            title: "24/7 AI వాయిస్ సపోర్ట్",
+            desc: "మా AI వాయిస్ ఏజెంట్ నుండి తక్షణ సహాయం పొందండి. నిపుణుల వ్యవసాయ సలహా కోసం ఎప్పుడైనా మాకు CALL చేయండి.",
+            callNow: "ఇప్పుడే కాల్ చేయండి",
+            number: "+1 260-529-7403"
+        },
+        sidebar: {
+            newChat: "కొత్త చాట్",
+            newAnalysis: "కొత్త విశ్లేషణ",
+            searchPlaceholder: "చరిత్రను వెతకండి...",
+            conversations: "సంభాషణలు",
+            analyses: "పంట విశ్లేషణలు",
+            noChats: "చాట్లు ఏవీ కనుగొనబడలేదు",
+            noAnalyses: "విశ్లేషణలు ఏవీ కనుగొనబడలేదు",
+            signInToSync: "మీ చరిత్రను అన్వయించడానికి సైన్ ఇన్ చేయండి",
+            openHistory: "చరిత్రను తెరువు"
+        },
+        history: {
+            title: "మీ చరిత్ర",
+            title_part1: "మీ",
+            title_part2: "చరిత్ర",
+            subtitle: "మీ ఖాతాలో సేవ్ చేయబడిన గత సంభాషణలు మరియు పంట విશ્లేషణలు",
+            chatTab: "చాట్లు",
+            analysisTab: "విశ్లేషణలు",
+            noChats: "ఇంకా సంభాషణలు ఏవీ లేవు",
+            noChatsDesc: "మీ చరిత్రను ఇక్కడ చూడటానికి AgriSense AIతో చాట్ చేయడం ప్రారంభించండి",
+            noAnalyses: "ఇంకా విశ్లేషణలు ఏవీ లేవు",
+            noAnalysesDesc: "మీ సేవ్ చేసిన ఫలితాలను ఇక్కడ చూడటానికి పంట విశ్లేషణను అమలు చేయండి",
+            loading: "మీ చరిత్రను లోడ్ చేస్తోంది...",
+            untitled: "శీర్షిక లేని చాట్",
+            msgs: "సందేశాలు",
+            moreMsgs: "మరిన్ని సందేశాలు",
+            acres: "ఎకరాలు",
+            justNow: "ఇప్పుడే",
+            hoursAgo: "గంటల క్రితం",
+            daysAgo: "రోజుల క్రితం",
+            items: "ఐటమ్స్",
+            loadSaved: "సేవ్ చేసినవి చూస్తున్నారు",
+            searchHeader: "చరిత్రను వెतకండి...",
+            startChat: "చాట్ ప్రారంభించండి",
+            runAnalysis: "విశ్లేషణను ప్రారంభించండి",
+            unknownLocation: "తెలియని ప్రాంతం"
+        },
+        activeReport: "క్రియాశీల నివేదిక",
 
         // Analysis Form
         farmDetails: "పొలం వివరాలు",
@@ -506,6 +710,13 @@ export const translations = {
         thinking: "চিন্তা করছে...",
         howCanIHelp: "আমি আজ আপনাকে কীভাবে সাহায্য করতে পারি?",
         chatDesc: "ফসল, চাষাবাদ, মাটি, পোকা, সেচ, বাজারদর বা সরকারী প্রকল্প সম্পর্কে আমাকে যেকোনো কিছু জিজ্ঞাসা করুন।",
+        placeholder: "AgriSense AI-কে বার্তা পাঠান...",
+        describeIssue: "সমস্যার বর্ণনা দিন বা শুধু ছবি পাঠান...",
+        uploadPrompt: "তাৎক্ষণিক রোগ বিশ্লেষণের জন্য ফসলের ছবি আপলোড করুন",
+        pestManagement: "কীটপতঙ্গ ব্যবস্থাপনা",
+        pestManagementDesc: "টমেটো গাছে এফিড নিয়ন্ত্রণের জৈব উপায় কী?",
+        govSchemes: "সরকারি প্রকল্পসমূহ",
+        govSchemesDesc: "ভারতে ক্ষুদ্র কৃষকদের জন্য কী কী ভর্তুকি পাওয়া যায়?",
         footerWarning: "AgriSense AI ভুল করতে পারে। গুরুত্বপূর্ণ চাষের সিদ্ধান্ত স্থানীয় বিশেষজ্ঞদের সাথে যাচাই করুন।",
 
         // Landing Page
@@ -539,6 +750,45 @@ export const translations = {
             title: "আপনার ফসল নির্বাচন উন্নত করতে প্রস্তুত?",
             desc: "ডেটা-চালিত সিদ্ধান্ত নেওয়া হাজার হাজার কৃষকের সাথে যোগ দিন",
             button: "আপনার বিনামূল্যে বিশ্লেষণ শুরু করুন"
+        },
+        voiceSupport: {
+            title: "24/7 AI ভয়েস সাপোর্ট",
+            desc: "আমাদের AI ভয়েস এজেন্টের কাছ থেকে তাত্ক্ষণিক সহায়তা পান। বিশেষজ্ঞ কৃষি পরামর্শের জন্য আমাদের যে কোনও সময় কল করুন।",
+            callNow: "এখনই কল করুন",
+            number: "+1 260-529-7403"
+        },
+        sidebar: {
+            newChat: "নতুন চ্যাট",
+            newAnalysis: "নতুন বিশ্লেষণ",
+            searchPlaceholder: "ইতিহাস খুঁজুন...",
+            conversations: "কথোপকথন",
+            analyses: "ফসল বিশ্লেষণ",
+            noChats: "কোনো চ্যাট পাওয়া যায়নি",
+            noAnalyses: "কোনো বিশ্লেষণ পাওয়া যায়নি",
+            signInToSync: "আপনার ইতিহাস সিঙ্ক করতে সাইন ইন করুন",
+            openHistory: "ইতিহাস খুলুন"
+        },
+        history: {
+            title: "আপনার ইতিহাস",
+            title_part1: "আপনার",
+            title_part2: "ইতিহাস",
+            subtitle: "আপনার অ্যাকাউন্টে সংরক্ষিত আগের কথোপকথন এবং ফসলের বিশ্লেষণ",
+            chatTab: "চ্যাট",
+            analysisTab: "বিশ্লেষণ",
+            noChats: "এখনো কোনো কথোপকথন নেই",
+            noChatsDesc: "আপনার ইতিহাস এখানে দেখতে AgriSense AI-এর সাথে চ্যাট শুরু করুন",
+            noAnalyses: "এখনো কোনো বিশ্লেষণ নেই",
+            noAnalysesDesc: "আপনার সংরক্ষিত ফলাফল এখানে দেখতে একটি ফসল বিশ্লেষণ শুরু করুন",
+            loading: "আপনার ইতিহাস লোড হচ্ছে...",
+            untitled: "শিরোনামহীন চ্যাট",
+            msgs: "বার্তা",
+            moreMsgs: "আরও বার্তা",
+            acres: "একর",
+            justNow: "এইমাত্র",
+            hoursAgo: "ঘন্টা আগে",
+            daysAgo: "দিন আগে",
+            items: "আইটেম",
+            loadSaved: "সংরক্ষিত দেখছেন"
         },
 
         // Analysis Form
@@ -627,6 +877,13 @@ export const translations = {
         thinking: "சிந்திக்கிறது...",
         howCanIHelp: "நான் இன்று உங்களுக்கு எப்படி உதவ முடியும்?",
         chatDesc: "பயிர்கள், விவசாயம், மண், பூச்சிகள், நீர்ப்பாசனம், சந்தை விலைகள் அல்லது அரசு திட்டங்கள் பற்றி என்னிடம் எதையும் கேளுங்கள்.",
+        placeholder: "AgriSense AI-க்கு செய்தி அனுப்புங்கள்...",
+        describeIssue: "பிரச்சினையை விவரிக்கவும் அல்லது படத்தை அனுப்பவும்...",
+        uploadPrompt: "உடனடி நோய் பகுப்பாய்விற்கு பயிர் படங்களை பதிவேற்றவும்",
+        pestManagement: "பூச்சி மேலாண்மை",
+        pestManagementDesc: "தக்காளி செடிகளில் அசுவினிகளைக் கட்டுப்படுத்த இயற்கையான வழிகள்?",
+        govSchemes: "அரசு திட்டங்கள்",
+        govSchemesDesc: "இந்தியாவில் சிறு விவசாயிகளுக்கு என்ன மானியங்கள் கிடைக்கின்றன?",
         footerWarning: "AgriSense AI தவறுகளைச் செய்யக்கூடும். முக்கியமான விவசாய முடிவுகளை உள்ளூர் நிபுணர்களுடன் சரிபார்க்கவும்.",
 
         // Landing Page
@@ -660,6 +917,45 @@ export const translations = {
             title: "உங்கள் பயிர் தேர்வை மேம்படுத்த தயாரா?",
             desc: "தரவு அடிப்படையிலான முடிவுகளை எடுக்கும் ஆயிரக்கணக்கான விவசாயிகளுடன் இணையுங்கள்",
             button: "உங்கள் இலவச பகுப்பாய்வைத் தொடங்குங்கள்"
+        },
+        voiceSupport: {
+            title: "24/7 AI குரல் ஆதரவு",
+            desc: "எங்கள் AI குரல் முகவரிடமிருந்து உடனடி உதவியைப் பெறுங்கள். நிபுணர் விவசாய ஆலோசனைகளுக்கு எப்போது வேண்டுமானாலும் எங்களை அழைக்கவும்.",
+            callNow: "இப்போது அழைக்கவும்",
+            number: "+1 260-529-7403"
+        },
+        sidebar: {
+            newChat: "புதிய சேட்",
+            newAnalysis: "புதிய பகுப்பாய்வு",
+            searchPlaceholder: "வரலாற்றைத் தேடுங்கள்...",
+            conversations: "உரையாடல்கள்",
+            analyses: "பயிர் பகுப்பாய்வு",
+            noChats: "சேட்கள் எதுவும் காணப்படவில்லை",
+            noAnalyses: "பகுப்பாய்வுகள் எதுவும் காணப்படவில்லை",
+            signInToSync: "உங்கள் வரலாற்றை சாதனங்களில் ஒத்திசைக்க உள்நுழையவும்",
+            openHistory: "வரலாற்றைத் திறக்கவும்"
+        },
+        history: {
+            title: "உங்கள் வரலாறு",
+            title_part1: "உங்கள்",
+            title_part2: "வரலாறு",
+            subtitle: "உங்கள் கணக்கில் சேமிக்கப்பட்ட முந்தைய உரையாடல்கள் மற்றும் பயிர் பகுப்பாய்வு",
+            chatTab: "உரையாடல்கள்",
+            analysisTab: "பகுப்பாய்வு",
+            noChats: "இன்னும் உரையாடல்கள் எதுவும் இல்லை",
+            noChatsDesc: "உங்கள் வரலாற்றை இங்கே காண AgriSense AI உடன் சேட் செய்யத் தொடங்குங்கள்",
+            noAnalyses: "இன்னும் பகுப்பாய்வுகள் எதுவும் இல்லை",
+            noAnalysesDesc: "உங்கள் சேமிக்கப்பட்ட முடிவுகளை இங்கே காண பயிர் பகுப்பாய்வை இயக்கவும்",
+            loading: "உங்கள் வரலாறு ஏற்றப்படுகிறது...",
+            untitled: "தலைப்பில்லாத சேட்",
+            msgs: "செய்திகள்",
+            moreMsgs: "கூடுதல் செய்திகள்",
+            acres: "ஏக்கர்",
+            justNow: "இப்போது",
+            hoursAgo: "மணிநேரத்திற்கு முன்",
+            daysAgo: "நாட்களுக்கு முன்",
+            items: "உருப்படிகள்",
+            loadSaved: "சேமித்ததைப் பார்க்கிறீர்கள்"
         },
 
         // Analysis Form
@@ -748,6 +1044,13 @@ export const translations = {
         thinking: "વિચારી રહ્યું છે...",
         howCanIHelp: "હું આજે તમને કેવી રીતે મદદ કરી શકું?",
         chatDesc: "પાક, ખેતી, જમીન, જંતુઓ, સિંચાઈ, બજારના ભાવ અથવા સરકારી યોજનાઓ વિશે મને ગમે તે પૂછો.",
+        placeholder: "AgriSense AI ને સંદેશ મોકલો...",
+        describeIssue: "સમસ્યાનું વર્ણન કરો અથવા ફક્ત ફોટો મોકલો...",
+        uploadPrompt: "તત્કાલ રોગ વિશ્લેષણ માટે પાકના ફોટા અપલોડ કરો",
+        pestManagement: "જીવાત વ્યવસ્થાપન",
+        pestManagementDesc: "ટમેટાના છોડ પર એફિડ્સને નિયંત્રિત કરવાની જૈવિક રીતો?",
+        govSchemes: "સરકારી યોજનાઓ",
+        govSchemesDesc: "ભારતમાં નાના ખેડૂતો માટે કઈ સબસિડી ઉપલબ્ધ છે?",
         footerWarning: "AgriSense AI ભૂલો કરી શકે છે. મહત્વપૂર્ણ ખેતીના નિર્ણયો સ્થાનિક નિષ્ણાતો સાથે ચકાસો.",
 
         // Landing Page
@@ -781,6 +1084,45 @@ export const translations = {
             title: "તમારા પાકની પસંદગી સુધારવા માટે તૈયાર છો?",
             desc: "ડેટા-આધારિત નિર્ણયો લેતા હજારો ખેડૂતો સાથે જોડાઓ",
             button: "તમારું મફત વિશ્લેષણ શરૂ કરો"
+        },
+        voiceSupport: {
+            title: "24/7 AI વોઈસ સપોર્ટ",
+            desc: "અમારા AI વોઈસ એજન્ટ પાસેથી ત્વરિત સહાય મેળવો. નિષ્ણાત ખેતી સલાહ માટે અમને ગમે ત્યારે કોલ કરો.",
+            callNow: "અત્યારે કોલ કરો",
+            number: "+1 260-529-7403"
+        },
+        sidebar: {
+            newChat: "નવી ચેટ",
+            newAnalysis: "નવું વિશ્લેષણ",
+            searchPlaceholder: "ઇતિહાસ શોધો...",
+            conversations: "વાતચીત",
+            analyses: "પાક વિશ્લેષણ",
+            noChats: "કોઈ ચેટ મળી નથી",
+            noAnalyses: "કોઈ વિશ્લેષણ મળ્યું નથી",
+            signInToSync: "તમારો ઇતિહાસ સિંક કરવા માટે સાઇન ઇન કરો",
+            openHistory: "ઇતિહાસ ખોલો"
+        },
+        history: {
+            title: "તમારો ઇતિહાસ",
+            title_part1: "તમારો",
+            title_part2: "ઇતિહાસ",
+            subtitle: "તમારા ખાતામાં સાચવેલી અગાઉની વાતચીત અને પાક વિશ્લેષણ",
+            chatTab: "ચેટ્સ",
+            analysisTab: "વિશ્લેષણ",
+            noChats: "હજી સુધી કોઈ વાતચીત નથી",
+            noChatsDesc: "તમારો ઇતિહાસ અહીં જોવા માટે AgriSense AI સાથે ચેટિંગ શરૂ કરો",
+            noAnalyses: "હજી સુધી કોઈ વિશ્લેષણ નથી",
+            noAnalysesDesc: "તમારા સાચવેલા પરિણામો અહીં જોવા માટે પાક વિશ્લેષણ ચલાવો",
+            loading: "તમારો ઇતિહાસ લોડ થઈ રહ્યો છે...",
+            untitled: "શીર્ષક વગરની ચેટ",
+            msgs: "સંદેશા",
+            moreMsgs: "વધુ સંદેશા",
+            acres: "એકર",
+            justNow: "હમણાં જ",
+            hoursAgo: "કલાક પહેલા",
+            daysAgo: "દિવસ પહેલા",
+            items: "વસ્તુઓ",
+            loadSaved: "સાચવેલું જોઈ રહ્યા છે"
         },
 
         // Analysis Form
@@ -869,6 +1211,13 @@ export const translations = {
         thinking: "ಯೋಚಿಸುತ್ತಿದೆ...",
         howCanIHelp: "ನಾನು ಇಂದು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಲಿ?",
         chatDesc: "ಬೆಳೆಗಳು, ಕೃಷಿ, ಮಣ್ಣು, ಕೀಟಗಳು, ನೀರಾವರಿ, ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು ಅಥವಾ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳ ಬಗ್ಗೆ ನನಗೆ ಯಾವುದನ್ನಾದರೂ ಕೇಳಿ.",
+        placeholder: "AgriSense AI ಗೆ ಸಂದೇಶ ಕಳುಹಿಸಿ...",
+        describeIssue: "ಸಮಸ್ಯೆಯನ್ನು ವಿವರಿಸಿ ಅಥವಾ ಚಿತ್ರವನ್ನು ಕಳುಹಿಸಿ...",
+        uploadPrompt: "ತಕ್ಷಣದ ರೋಗ ವಿಶ್ಲೇಷಣೆಗಾಗಿ ಬೆಳೆ ಚಿತ್ರಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
+        pestManagement: "ಕೀಟ ನಿರ್ವಹಣೆ",
+        pestManagementDesc: "ಟೊಮೆಟೊ ಸಸ್ಯಗಳ ಮೇಲೆ ಅಫಿಡ್‌ಗಳನ್ನು ನಿಯಂತ್ರಿಸಲು ಸಾವಯವ ವಿಧಾನಗಳು?",
+        govSchemes: "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳು",
+        govSchemesDesc: "ಭಾರತದಲ್ಲಿ ಸಣ್ಣ ರೈತರಿಗೆ ಯಾವ ಸಬ್ಸಿಡಿಗಳು ಲಭ್ಯವಿವೆ?",
         footerWarning: "AgriSense AI ತಪ್ಪುಗಳನ್ನು ಮಾಡಬಹುದು. ಪ್ರಮುಖ ಕೃಷಿ ನಿರ್ಧಾರಗಳನ್ನು ಸ್ಥಳೀಯ ತಜ್ಞರೊಂದಿಗೆ ಪರಿಶೀಲಿಸಿ.",
 
         // Landing Page
@@ -902,6 +1251,45 @@ export const translations = {
             title: "ನಿಮ್ಮ ಬೆಳೆ ಆಯ್ಕೆಯನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಿದ್ಧರಿದ್ದೀರಾ?",
             desc: "ಡೇಟಾ ಆಧಾರಿತ ನಿರ್ಧಾರಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳುವ ಸಾವಿರಾರು ರೈತರನ್ನು ಸೇರಿ",
             button: "ನಿಮ್ಮ ಉಚಿತ ವಿಶ್ಲೇಷಣೆಯನ್ನು ಪ್ರಾರಂಭಿಸಿ"
+        },
+        voiceSupport: {
+            title: "24/7 AI ವಾಯ್ಸ್ ಸಪೋರ್ಟ್",
+            desc: "ನಮ್ಮ AI ವಾಯ್ಸ್ ಏಜೆಂಟ್‌ನಿಂದ ತಕ್ಷಣದ ಸಹಾಯ ಪಡೆಯಿರಿ. ತಜ್ಞ ಕೃಷಿ ಸಲಹೆಗಾಗಿ ನಮಗೆ ಯಾವಾಗ ಬೇಕಾದರೂ ಕರೆ ಮಾಡಿ.",
+            callNow: "ಈಗ ಕರೆ ಮಾಡಿ",
+            number: "+1 260-529-7403"
+        },
+        sidebar: {
+            newChat: "ಹೊಸ ಚಾಟ್",
+            newAnalysis: "ಹೊಸ ವಿಶ್ಲೇಷಣೆ",
+            searchPlaceholder: "ಇತಿಹಾಸವನ್ನು ಹುಡುಕಿ...",
+            conversations: "ಸಂಭಾಷಣೆಗಳು",
+            analyses: "ಬೆಳೆ ವಿಶ್ಲೇಷಣೆಗಳು",
+            noChats: "ಯಾವುದೇ ಚಾಟ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
+            noAnalyses: "ಯಾವುದೇ ವಿಶ್ಲೇಷಣೆಗಳು ಕಂಡುಬಂದಿಲ್ಲ",
+            signInToSync: "ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು ಸಾಧನಗಳಾದ್ಯಂತ ಸಿಂಕ್ ಮಾಡಲು ಸೈನ್ ಇನ್ ಮಾಡಿ",
+            openHistory: "ಇತಿಹಾಸವನ್ನು ತೆರೆಯಿರಿ"
+        },
+        history: {
+            title: "ನಿಮ್ಮ ಇತಿಹಾಸ",
+            title_part1: "ನಿಮ್ಮ",
+            title_part2: "ಇತಿಹಾಸ",
+            subtitle: "ನಿಮ್ಮ ಖಾತೆಗೆ ಉಳಿಸಲಾದ ಹಿಂದಿನ ಸಂಭಾಷಣೆಗಳು ಮತ್ತು ಬೆಳೆ ವಿಶ್ಲೇಷಣೆಗಳು",
+            chatTab: "ಚಾಟ್‌ಗಳು",
+            analysisTab: "ವಿಶ್ಲೇಷಣೆಗಳು",
+            noChats: "ಇನ್ನೂ ಯಾವುದೇ ಸಂಭಾಷಣೆಗಳಿಲ್ಲ",
+            noChatsDesc: "ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು ಇಲ್ಲಿ ನೋಡಲು AgriSense AI ನೊಂದಿಗೆ ಚಾಟ್ ಮಾಡಲು ಪ್ರಾರಂಭಿಸಿ",
+            noAnalyses: "ಇನ್ನೂ ಯಾವುದೇ ವಿಲೇಷಣೆಗಳಿಲ್ಲ",
+            noAnalysesDesc: "ನಿಮ್ಮ ಉಳಿಸಿದ ಫಲಿತಾಂಶಗಳನ್ನು ಇಲ್ಲಿ ನೋಡಲು ಬೆಳೆ ವಿಶ್ಲೇಷಣೆಯನ್ನು ಚಲಾಯಿಸಿ",
+            loading: "ನಿಮ್ಮ ಇತಿಹಾಸವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗುತ್ತಿದೆ...",
+            untitled: "ಶೀರ್ಷಿಕೆಯಿಲ್ಲದ ಚಾಟ್",
+            msgs: "ಸಂದೇಶಗಳು",
+            moreMsgs: "ಹೆಚ್ಚಿನ ಸಂದೇಶಗಳು",
+            acres: "ಎಕರೆಗಳು",
+            justNow: "ಈಗ ತಾನೇ",
+            hoursAgo: "ಗಂ ಹಿಂದೆ",
+            daysAgo: "ದಿಂ ಹಿಂದೆ",
+            items: "ಐಟಂಗಳು",
+            loadSaved: "ಉಳಿಸಿದ್ದನ್ನು ವೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ"
         },
 
         // Analysis Form
@@ -990,6 +1378,13 @@ export const translations = {
         thinking: "ਸੋਚ ਰਿਹਾ ਹੈ...",
         howCanIHelp: "ਮੈਂ ਅੱਜ ਤੁਹਾਡੀ ਕਿਵੇਂ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ?",
         chatDesc: "ਫਸਲਾਂ, ਖੇਤੀਬਾੜੀ, ਮਿੱਟੀ, ਕੀੜੇ, ਸਿੰਚਾਈ, ਬਾਜ਼ਾਰ ਦੀਆਂ ਕੀਮਤਾਂ ਜਾਂ ਸਰਕਾਰੀ ਸਕੀਮਾਂ ਬਾਰੇ ਮੈਨੂੰ ਕੁਝ ਵੀ ਪੁੱਛੋ।",
+        placeholder: "AgriSense AI ਨੂੰ ਸੁਨੇਹਾ ਭੇਜੋ...",
+        describeIssue: "ਮੁਸ਼ਕਲ ਬਾਰੇ ਦੱਸੋ ਜਾਂ ਸਿਰਫ ਤਸਵੀਰ ਭੇਜੋ...",
+        uploadPrompt: "ਤੁਰੰਤ ਬਿਮਾਰੀ ਵਿਸ਼ਲੇਸ਼ਣ ਲਈ ਫਸਲ ਦੀਆਂ ਤਸਵੀਰਾਂ ਅਪਲੋਡ ਕਰੋ",
+        pestManagement: "ਕੀੜੇ ਪ੍ਰਬੰਧਨ",
+        pestManagementDesc: "ਟਮਾਟਰ ਦੇ ਪੌਦਿਆਂ 'ਤੇ ਐਫਿਡਜ਼ ਨੂੰ ਕਾਬੂ ਕਰਨ ਦੇ ਜੈਵਿਕ ਤਰੀਕੇ?",
+        govSchemes: "ਸਰਕਾਰੀ ਸਕੀਮਾਂ",
+        govSchemesDesc: "ਭਾਰਤ ਵਿੱਚ ਛੋਟੇ ਕਿਸਾਨਾਂ ਲਈ ਕਿਹੜੀਆਂ ਸਬਸਿਡੀਆਂ ਉਪਲਬਧ ਹਨ?",
         footerWarning: "AgriSense AI ਗਲਤੀਆਂ ਕਰ ਸਕਦਾ ਹੈ। ਮਹੱਤਵਪੂਰਨ ਖੇਤੀਬਾੜੀ ਫੈਸਲਿਆਂ ਦੀ ਸਥਾਨਕ ਮਾਹਿਰਾਂ ਤੋਂ ਪੁਸ਼ਟੀ ਕਰੋ।",
 
         // Landing Page
@@ -1023,6 +1418,45 @@ export const translations = {
             title: "ਆਪਣੀ ਫਸਲ ਦੀ ਚੋਣ ਨੂੰ ਬਿਹਤਰ ਬਣਾਉਣ ਲਈ ਤਿਆਰ ਹੋ?",
             desc: "ਡੇਟਾ-ਅਧਾਰਤ ਫੈਸਲੇ ਲੈਣ ਵਾਲੇ ਹਜ਼ਾਰਾਂ ਕਿਸਾਨਾਂ ਨਾਲ ਜੁੜੋ",
             button: "ਆਪਣਾ ਮੁਫਤ ਵਿਸ਼ਲੇਸ਼ਣ ਸ਼ੁਰੂ ਕਰੋ"
+        },
+        voiceSupport: {
+            title: "24/7 AI ਵੌਇਸ ਸਪੋਰਟ",
+            desc: "ਸਾਡੇ AI ਵੌਇਸ ਏਜੰਟ ਤੋਂ ਤੁਰੰਤ ਸਹਾਇਤਾ ਪ੍ਰਾਪਤ ਕਰੋ। ਮਾਹਿਰ ਖੇਤੀਬਾੜੀ ਸਲਾਹ ਲਈ ਸਾਨੂੰ ਕਿਸੇ ਵੀ ਸਮੇਂ ਕਾਲ ਕਰੋ।",
+            callNow: "ਹੁਣੇ ਕਾਲ ਕਰੋ",
+            number: "+1 260-529-7403"
+        },
+        sidebar: {
+            newChat: "ਨਵੀਂ ਚੈਟ",
+            newAnalysis: "ਨਵਾਂ ਵਿਸ਼ਲੇਸ਼ਣ",
+            searchPlaceholder: "ਇਤਿਹਾਸ ਖੋਜੋ...",
+            conversations: "ਗੱਲਬਾਤ",
+            analyses: "ਫਸਲ ਵਿਸ਼ਲੇਸ਼ਣ",
+            noChats: "ਕੋਈ ਚੈਟ ਨਹੀਂ ਮਿਲੀ",
+            noAnalyses: "ਕੋਈ ਵਿਸ਼ਲੇਸ਼ਣ ਨਹੀਂ ਮਿਲਿਆ",
+            signInToSync: "ਆਪਣੇ ਇਤਿਹਾਸ ਨੂੰ ਸਿੰਕ ਕਰਨ ਲਈ ਸਾਇਨ ਇਨ ਕਰੋ",
+            openHistory: "ਇਤਿਹਾਸ ਖੋਲ੍ਹੋ"
+        },
+        history: {
+            title: "ਤੁਹਾਡਾ ਇਤਿਹਾਸ",
+            title_part1: "ਤੁਹਾਡਾ",
+            title_part2: "ਇਤਿਹਾਸ",
+            subtitle: "ਤੁਹਾਡੇ ਖਾਤੇ ਵਿੱਚ ਸੁਰੱਖਿਅਤ ਪਿਛਲੀ ਗੱਲਬಾਤ ਅਤੇ ਫਸਲ ਵਿਸ਼ਲੇਸ਼ਣ",
+            chatTab: "ਚੈਟ",
+            analysisTab: "ਵਿਸ਼ਲੇਸ਼ਣ",
+            noChats: "ਅਜੇ ਤੱਕ ਕੋਈ ਗੱਲਬਾਤ ਨਹੀਂ",
+            noChatsDesc: "ਆਪਣਾ ਇਤਿਹਾਸ ਇੱਥੇ ਦੇਖਣ ਲਈ AgriSense AI ਨਾਲ ਚੈਟ ਕਰਨਾ ਸ਼ੁਰੂ ਕਰੋ",
+            noAnalyses: "ਅਜੇ ਤੱਕ ਕੋਈ ਵਿਸ਼ਲੇਸ਼ਣ ਨਹੀਂ",
+            noAnalysesDesc: "ਆਪਣੇ ਸੁਰੱਖਿਅਤ ਨਤੀਜੇ ਇੱਥੇ ਦੇਖਣ ਲਈ ਫਸਲ ਵਿਸ਼ਲੇਸ਼ਣ ਚਲਾਓ",
+            loading: "ਤੁਹਾਡਾ ਇਤਿਹਾਸ ਲੋਡ ਹੋ ਰਿਹਾ ਹੈ...",
+            untitled: "ਬਿਨਾਂ ਸਿਰਲੇਖ ਵਾਲੀ ਚੈਟ",
+            msgs: "ਸੁਨੇਹੇ",
+            moreMsgs: "ਹੋਰ ਸੁਨੇਹੇ",
+            acres: "ਏਕੜ",
+            justNow: "ਹੁਣੇ",
+            hoursAgo: "ਘੰਟੇ ਪਹਿਲਾਂ",
+            daysAgo: "ਦਿਨ ਪਹਿਲਾਂ",
+            items: "ਆਈਟਮਾਂ",
+            loadSaved: "ਸੁਰੱਖਿਅਤ ਦੇਖ ਰਹੇ ਹੋ"
         },
 
         // Analysis Form
