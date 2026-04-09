@@ -72,8 +72,10 @@ function fallbackFromRetrieved(retrieved: any[], size: number, budget: number, l
         const phosphorus = Math.round((payload.phosphorus || 15) * size);
         const potassium = Math.round((payload.potassium || 15) * size);
         const expected_output = Math.round((payload.production || payload.yield || 1) * size * 1000);
-        const lower_profit = Math.round((expected_output * 10));
-        const upper_profit = Math.round((expected_output * 25));
+        const budget_needed = Math.round((nitrogen + phosphorus + potassium) * 80 + expected_output * 2);
+        // Profit is Net: (Output * Price) - Budget
+        const lower_profit = Math.max(0, Math.round((expected_output * 10)) - budget_needed);
+        const upper_profit = Math.max(0, Math.round((expected_output * 25)) - budget_needed);
 
         return {
             recommended_crop: crop,
@@ -107,7 +109,7 @@ function fallbackFromRetrieved(retrieved: any[], size: number, budget: number, l
             },
             expected_output_kg: expected_output,
             expected_profit_range_rs: [lower_profit, upper_profit],
-            estimated_budget_needed_rs: Math.round((nitrogen + phosphorus + potassium) * 80 + expected_output * 2),
+            estimated_budget_needed_rs: budget_needed,
             top_similar_crops: retrieved.slice(0, 5).map(r => {
                 const rPayload = r.payload || r;
                 return rPayload.crop || rPayload.Crop;

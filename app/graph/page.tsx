@@ -5,7 +5,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
     PieChart, Pie, Cell, LineChart, Line, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Area, AreaChart
 } from 'recharts';
-import { Sprout, Droplets, TrendingUp, DollarSign, Package, AlertCircle, Info, Leaf, Sun, CloudRain, ChevronRight, Zap, BarChart3, ArrowRight, Moon } from 'lucide-react';
+import { Sprout, Droplets, TrendingUp, DollarSign, Package, AlertCircle, Info, Leaf, Sun, CloudRain, ChevronRight, Zap, BarChart3, ArrowRight, Moon, Menu } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -70,7 +70,8 @@ function CropAnalyzerContent() {
         budget: '',
         soil_type: '',
         water_source: '',
-        season: ''
+        season: '',
+        duration: ''
     });
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<ApiResponse | null>(null);
@@ -80,6 +81,7 @@ function CropAnalyzerContent() {
     const [expandedCrops, setExpandedCrops] = useState<number[]>([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
     const [viewingHistoryTitle, setViewingHistoryTitle] = useState<string | null>(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Load analysis from URL param
     useEffect(() => {
@@ -141,7 +143,8 @@ function CropAnalyzerContent() {
             budget: '',
             soil_type: '',
             water_source: '',
-            season: ''
+            season: '',
+            duration: ''
         });
         setError('');
         setViewingHistoryTitle(null);
@@ -168,6 +171,7 @@ function CropAnalyzerContent() {
         if (!formData.soil_type) errors.soil_type = t.errorMessages.soil;
         if (!formData.water_source) errors.water_source = t.errorMessages.water;
         if (!formData.season) errors.season = t.errorMessages.season;
+        if (!formData.duration) errors.duration = t.errorMessages.duration;
 
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
@@ -194,6 +198,7 @@ function CropAnalyzerContent() {
                     soil_type: formData.soil_type,
                     water_source: formData.water_source,
                     season: formData.season,
+                    duration: formData.duration,
                     language: language
                 }),
             });
@@ -231,7 +236,8 @@ function CropAnalyzerContent() {
 
                         const roiData = data.recommendations.map((rec: any) => {
                             const avgProfit = (rec.expected_profit_range_rs[0] + rec.expected_profit_range_rs[1]) / 2;
-                            const roi = ((avgProfit - rec.estimated_budget_needed_rs) / rec.estimated_budget_needed_rs) * 100;
+                            const budget = rec.estimated_budget_needed_rs || 1; // Avoid division by zero
+                            const roi = (avgProfit / budget) * 100;
                             return {
                                 crop: rec.recommended_crop_localized || rec.recommended_crop,
                                 'Investment (₹)': rec.estimated_budget_needed_rs,
@@ -311,7 +317,8 @@ function CropAnalyzerContent() {
 
     const roiAnalysisData = result?.recommendations.map(rec => {
         const avgProfit = (rec.expected_profit_range_rs[0] + rec.expected_profit_range_rs[1]) / 2;
-        const roi = ((avgProfit - rec.estimated_budget_needed_rs) / rec.estimated_budget_needed_rs) * 100;
+        const budget = rec.estimated_budget_needed_rs || 1; // Avoid division by zero
+        const roi = (avgProfit / budget) * 100;
         return {
             crop: rec.recommended_crop_localized || rec.recommended_crop,
             'Investment (₹)': rec.estimated_budget_needed_rs,
@@ -369,20 +376,30 @@ function CropAnalyzerContent() {
                 }}
                 onSelectAnalysis={handleSelectAnalysis}
                 onNew={handleNewAnalysis}
+                externalIsOpen={sidebarOpen}
+                setExternalIsOpen={setSidebarOpen}
             />
             <div className="flex-1 min-w-0 overflow-y-auto">
             {/* Sticky Header */}
             <header className={`border-b backdrop-blur-md sticky top-0 z-50 transition-colors duration-300 ${d ? 'border-[#2e2f42] bg-[#252636]/90' : 'border-gray-200/60 bg-white/90'}`}>
                 <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-                    <a href="/" className="flex items-center gap-2.5">
-                        <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-1.5 rounded-lg shadow-sm">
-                            <Sprout className="w-5 h-5 text-white" />
-                        </div>
-                        <span className={`text-lg font-bold bg-gradient-to-r bg-clip-text text-transparent ${d ? 'from-green-400 to-emerald-400' : 'from-green-700 to-emerald-600'}`}>
-                            AgriSense AI
-                        </span>
-                    </a>
-                    <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="flex items-center gap-2">
+                        <button 
+                            onClick={() => setSidebarOpen(true)}
+                            className={`p-2 rounded-lg md:hidden ${d ? 'text-gray-400 hover:bg-[#2e2f42]' : 'text-gray-500 hover:bg-gray-100'}`}
+                        >
+                            <Menu className="w-5 h-5" />
+                        </button>
+                        <a href="/" className="flex items-center gap-2.5">
+                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-1.5 rounded-lg shadow-sm">
+                                <Sprout className="w-5 h-5 text-white" />
+                            </div>
+                            <span className={`text-lg font-bold bg-gradient-to-r bg-clip-text text-transparent hidden xs:inline-block ${d ? 'from-green-400 to-emerald-400' : 'from-green-700 to-emerald-600'}`}>
+                                AgriSense AI
+                            </span>
+                        </a>
+                    </div>
+                    <div className="flex items-center gap-1.5 sm:gap-4">
                         <LanguageSwitcher dark={d} />
                         <button onClick={toggleTheme} className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${d ? 'bg-[#2e2f42] text-yellow-400 hover:bg-[#3a3b50]' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`} title={d ? 'Light mode' : 'Dark mode'}>
                             {d ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -503,8 +520,8 @@ function CropAnalyzerContent() {
                                 <input
                                     type="number"
                                     name="size"
-                                    step="0.1"
-                                    min="0.1"
+                                    step="any"
+                                    min="0.01"
                                     value={formData.size}
                                     onChange={handleChange}
                                     placeholder="e.g., 5.0"
@@ -617,6 +634,28 @@ function CropAnalyzerContent() {
                                     className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all ${d ? 'bg-[#2a2b3d] border-[#3a3b50] text-gray-200 placeholder-gray-500' : 'bg-gray-50/50 hover:bg-white border-gray-200'}`}
                                 />
                             </div>
+
+                            <div className="space-y-1.5">
+                                <label className={`flex items-center gap-1.5 text-sm font-semibold ${d ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    <Moon className="w-3.5 h-3.5 text-purple-500" />
+                                    {t.duration} <span className="text-red-400">*</span>
+                                </label>
+                                <select
+                                    name="duration"
+                                    value={formData.duration}
+                                    onChange={handleChange}
+                                    className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all appearance-none cursor-pointer ${d ? 'bg-[#2a2b3d] border-[#3a3b50] text-gray-200' : 'bg-gray-50/50 hover:bg-white'} ${validationErrors.duration ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
+                                        }`}
+                                >
+                                    <option value="">{t.selectDuration || "Select duration..."}</option>
+                                    {[...Array(12)].map((_, i) => (
+                                        <option key={i + 1} value={i + 1}>
+                                            {i + 1} {i === 0 ? "Month" : "Months"}
+                                        </option>
+                                    ))}
+                                </select>
+                                {validationErrors.duration && <p className="text-[11px] text-red-500 font-medium">{validationErrors.duration}</p>}
+                            </div>
                         </div>
 
                         <button
@@ -661,7 +700,8 @@ function CropAnalyzerContent() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                                 {result.recommendations.map((rec, index) => {
                                     const avgProfit = (rec.expected_profit_range_rs[0] + rec.expected_profit_range_rs[1]) / 2;
-                                    const roi = ((avgProfit - rec.estimated_budget_needed_rs) / rec.estimated_budget_needed_rs) * 100;
+                                    const budget = rec.estimated_budget_needed_rs || 1; // Avoid division by zero
+                                    const roi = (avgProfit / budget) * 100;
                                     const emoji = getCropEmoji(rec.recommended_crop);
 
                                     return (
@@ -960,8 +1000,9 @@ function CropAnalyzerContent() {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     {result.recommendations.map((rec, index) => {
                                         const avgProfit = (rec.expected_profit_range_rs[0] + rec.expected_profit_range_rs[1]) / 2;
-                                        const roi = ((avgProfit - rec.estimated_budget_needed_rs) / rec.estimated_budget_needed_rs) * 100;
-                                        const profitMargin = ((avgProfit / rec.estimated_budget_needed_rs) * 100);
+                                        const budget = rec.estimated_budget_needed_rs || 1;
+                                        const roi = (avgProfit / budget) * 100;
+                                        const profitMargin = (avgProfit / budget) * 100;
 
                                         return (
                                             <div key={index} className={`backdrop-blur-md rounded-2xl p-5 border transition-all hover:scale-[1.02] ${d ? 'bg-[#1e1f2b]/60 border-white/5' : 'bg-white/10 border-white/20 shadow-lg'

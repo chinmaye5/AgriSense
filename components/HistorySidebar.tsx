@@ -22,13 +22,20 @@ interface HistorySidebarProps {
     onSelectChat?: (chat: any) => void;
     onSelectAnalysis?: (analysis: any) => void;
     onNew?: () => void;
+    externalIsOpen?: boolean;
+    setExternalIsOpen?: (open: boolean) => void;
 }
 
-export default function HistorySidebar({ type, dark, t, onSelectChat, onSelectAnalysis, onNew }: HistorySidebarProps) {
+export default function HistorySidebar({ type, dark, t, onSelectChat, onSelectAnalysis, onNew, externalIsOpen, setExternalIsOpen }: HistorySidebarProps) {
     const { user, isLoaded, isSignedIn } = useUser();
     const [history, setHistory] = useState<{ conversations: any[], analyses: any[] }>({ conversations: [], analyses: [] });
     const [loading, setLoading] = useState(false);
-    const [isOpen, setIsOpen] = useState(false); // Default closed on mobile
+    const [internalIsOpen, setInternalIsOpen] = useState(false);
+    
+    // Use external state if provided, otherwise internal
+    const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+    const setIsOpen = setExternalIsOpen !== undefined ? setExternalIsOpen : setInternalIsOpen;
+    
     const [searchQuery, setSearchQuery] = useState('');
 
     // Auto-open on desktop, closed on mobile
@@ -112,12 +119,12 @@ export default function HistorySidebar({ type, dark, t, onSelectChat, onSelectAn
     const textSecondary = dark ? 'text-gray-400' : 'text-gray-500';
     const hoverBg = dark ? 'hover:bg-[#252636]' : 'hover:bg-gray-200/50';
 
-    // Toggle button when sidebar is closed
-    if (!isOpen) {
+    // Toggle button when sidebar is closed - only show if not controlled externally
+    if (!isOpen && externalIsOpen === undefined) {
         return (
             <button 
                 onClick={() => setIsOpen(true)}
-                className={`fixed left-3 top-3 z-50 p-2.5 rounded-xl border shadow-lg ${sidebarBg} ${borderColor} ${textSecondary} hover:text-green-500 transition-all`}
+                className={`fixed left-3 top-[70px] z-40 p-2.5 rounded-xl border shadow-lg ${sidebarBg} ${borderColor} ${textSecondary} hover:text-green-500 transition-all`}
                 title={t.sidebar?.openHistory || "Open history"}
             >
                 <Menu className="w-5 h-5" />
@@ -128,10 +135,12 @@ export default function HistorySidebar({ type, dark, t, onSelectChat, onSelectAn
     return (
         <>
             {/* Mobile backdrop overlay */}
-            <div 
-                className="fixed inset-0 bg-black/40 z-40 md:hidden"
-                onClick={() => setIsOpen(false)}
-            />
+            {isOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/40 z-40 md:hidden"
+                    onClick={() => setIsOpen(false)}
+                />
+            )}
 
             {/* Sidebar */}
             <aside className={`

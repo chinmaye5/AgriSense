@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback, Suspense } from 'react';
-import { Sprout, Send, RotateCcw, ArrowDown, Leaf, Droplets, Bug, Coins, Moon, Sun, ImagePlus, X, Camera } from 'lucide-react';
+import { Sprout, Send, RotateCcw, ArrowDown, Leaf, Droplets, Bug, Coins, Moon, Sun, ImagePlus, X, Camera, Mic, MicOff, Volume2, VolumeX, AudioLines, Menu } from 'lucide-react';
 import { useTheme } from '@/hooks/useTheme';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
@@ -27,6 +27,14 @@ interface ApiResponse {
     imageAnalyzed?: boolean;
 }
 
+// Extend Window interface for SpeechRecognition
+declare global {
+    interface Window {
+        webkitSpeechRecognition: any;
+        SpeechRecognition: any;
+    }
+}
+
 function ChatContent() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
@@ -35,16 +43,26 @@ function ChatContent() {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [uploadingImage, setUploadingImage] = useState(false);
+    const [isListening, setIsListening] = useState(false);
+    const [isSpeaking, setIsSpeaking] = useState(false);
+    const [autoSpeak, setAutoSpeak] = useState(true);
+    const [interimTranscript, setInterimTranscript] = useState('');
+    const [voiceMode, setVoiceMode] = useState(false);
+    const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+    const [voiceError, setVoiceError] = useState<string | null>(null);
     const { dark, toggleTheme, mounted } = useTheme();
     const { t, language } = useLanguage();
     const { isSignedIn, isLoaded } = useUser();
     const searchParams = useSearchParams();
     const router = useRouter();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const messagesContainerRef = useRef<HTMLDivElement>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const recognitionRef = useRef<any>(null);
+    const pendingTranscriptRef = useRef<string>('');
     const conversationIdRef = useRef<string>(Date.now().toString(36) + Math.random().toString(36).slice(2));
 
     const handleSelectChat = (chat: any) => {
@@ -53,6 +71,250 @@ function ChatContent() {
             timestamp: new Date(m.timestamp)
         })));
         conversationIdRef.current = chat.conversationId;
+    };
+
+    const stopSpeaking = useCallback(() => {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            setIsSpeaking(false);
+        }
+    }, []);
+
+    const speak = useCallback((text: string, messageId?: string) => {
+        if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+        // Clean text from markdown-like symbols for better TTS
+        const cleanText = text
+            .replace(/\*\*/g, '')
+            .replace(/###?/g, '')
+            .replace(/[-•]/g, '')
+            .replace(/\n{2,}/g, '. ')
+            .replace(/\n/g, '. ');
+
+        stopSpeaking();
+
+        // Split long text into chunks for better TTS handling (max ~200 chars per chunk)
+        const sentences = cleanText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [cleanText];
+        const chunks: string[] = [];
+        let current = '';
+        for (const sentence of sentences) {
+            if ((current + sentence).length > 250) {
+                if (current) chunks.push(current.trim());
+                current = sentence;
+            } else {
+                current += sentence;
+            }
+        }
+        if (current.trim()) chunks.push(current.trim());
+
+        if (messageId) setSpeakingMessageId(messageId);
+
+        // Map app language to BCP47
+        const langMap: Record<string, string> = {
+            'en': 'en-US',
+            'hi': 'hi-IN',
+            'kn': 'kn-IN',
+            'te': 'te-IN',
+            'ta': 'ta-IN',
+            'mr': 'mr-IN',
+            'pa': 'pa-IN',
+            'bn': 'bn-IN',
+            'gu': 'gu-IN'
+        };
+
+        chunks.forEach((chunk, idx) => {
+            const utterance = new SpeechSynthesisUtterance(chunk);
+            utterance.lang = langMap[language] || 'en-US';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+
+            if (idx === 0) {
+                utterance.onstart = () => setIsSpeaking(true);
+            }
+            if (idx === chunks.length - 1) {
+                utterance.onend = () => { setIsSpeaking(false); setSpeakingMessageId(null); };
+                utterance.onerror = () => { setIsSpeaking(false); setSpeakingMessageId(null); };
+            }
+
+            window.speechSynthesis.speak(utterance);
+        });
+    }, [language, stopSpeaking]);
+
+    // We need a ref to sendMessage since the recognition setup happens once
+    const sendMessageRef = useRef<(q?: string) => void>();
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognitionRef.current = new SpeechRecognition();
+                recognitionRef.current.continuous = true;
+                recognitionRef.current.interimResults = true;
+
+                recognitionRef.current.onresult = (event: any) => {
+                    let interim = '';
+                    let final = '';
+                    for (let i = 0; i < event.results.length; i++) {
+                        const result = event.results[i];
+                        if (result.isFinal) {
+                            final += result[0].transcript;
+                        } else {
+                            interim += result[0].transcript;
+                        }
+                    }
+                    if (final) {
+                        pendingTranscriptRef.current = final;
+                        setInterimTranscript('');
+                    } else {
+                        setInterimTranscript(interim);
+                    }
+                };
+
+                recognitionRef.current.onerror = (event: any) => {
+                    // Graceful handling — we show a nice UI instead of a loud console error
+                    let errorMsg = '';
+                    switch (event.error) {
+                        case 'audio-capture':
+                            errorMsg = 'No microphone detected. Please check if it is plugged in or if microphone access is enabled in your Windows/Browser settings.';
+                            break;
+                        case 'not-allowed':
+                            errorMsg = 'Microphone permission denied. Please click the lock icon in your browser address bar to allow access.';
+                            break;
+                        case 'no-speech':
+                            errorMsg = 'I didn\'t hear anything. Please try speaking again.';
+                            break;
+                        default:
+                            errorMsg = 'Speech recognition failed. Please check your connection and try again.';
+                    }
+                    setVoiceError(errorMsg);
+                    setIsListening(false);
+                    setInterimTranscript('');
+                };
+
+                recognitionRef.current.onend = () => {
+                    setIsListening(false);
+                    setInterimTranscript('');
+                    // Auto-send the transcript when recognition ends
+                    const transcript = pendingTranscriptRef.current;
+                    if (transcript.trim()) {
+                        pendingTranscriptRef.current = '';
+                        // Use the ref to send the message
+                        if (sendMessageRef.current) {
+                            sendMessageRef.current(transcript);
+                        }
+                    }
+                };
+            }
+        }
+        return () => {
+            if (recognitionRef.current) {
+                recognitionRef.current.stop();
+            }
+            stopSpeaking();
+        };
+    }, [stopSpeaking]);
+
+    const startListening = async () => {
+        if (!recognitionRef.current) {
+             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+             if (SpeechRecognition) {
+                 recognitionRef.current = new SpeechRecognition();
+                 recognitionRef.current.continuous = true;
+                 recognitionRef.current.interimResults = true;
+                 
+                 // Re-bind handlers
+                 recognitionRef.current.onresult = (event: any) => {
+                    let interim = '';
+                    let final = '';
+                    for (let i = 0; i < event.results.length; i++) {
+                        const result = event.results[i];
+                        if (result.isFinal) final += result[0].transcript;
+                        else interim += result[0].transcript;
+                    }
+                    if (final) { pendingTranscriptRef.current = final; setInterimTranscript(''); }
+                    else setInterimTranscript(interim);
+                };
+                
+                recognitionRef.current.onerror = (event: any) => {
+                    let errorMsg = '';
+                    switch (event.error) {
+                        case 'audio-capture': errorMsg = 'No microphone detected. Please check your Windows/Browser privacy settings and ensure your mic is plugged in.'; break;
+                        case 'not-allowed': errorMsg = 'Microphone permission denied. Please allow access in your browser.'; break;
+                        case 'no-speech': errorMsg = 'I didn\'t hear anything. Try again?'; break;
+                        default: errorMsg = 'Recognition failed. Please try again.';
+                    }
+                    setVoiceError(errorMsg);
+                    setIsListening(false);
+                };
+
+                recognitionRef.current.onend = () => {
+                    setIsListening(false);
+                    const transcript = pendingTranscriptRef.current;
+                    if (transcript.trim()) {
+                        pendingTranscriptRef.current = '';
+                        if (sendMessageRef.current) sendMessageRef.current(transcript);
+                    }
+                };
+             }
+        }
+
+        if (recognitionRef.current) {
+            // Check for Secure Context (HTTPS or Localhost)
+            if (typeof window !== 'undefined' && !window.isSecureContext) {
+                setVoiceError('Voice features require a secure connection (HTTPS or Localhost) to work. Please use https:// or test on localhost.');
+                setIsListening(false);
+                return;
+            }
+
+            setVoiceError(null);
+            stopSpeaking();
+            pendingTranscriptRef.current = '';
+            setInterimTranscript('');
+
+            const langMap: Record<string, string> = {
+                'en': 'en-US', 'hi': 'hi-IN', 'kn': 'kn-IN', 'te': 'te-IN', 
+                'ta': 'ta-IN', 'mr': 'mr-IN', 'pa': 'pa-IN', 'bn': 'bn-IN', 'gu': 'gu-IN'
+            };
+            recognitionRef.current.lang = langMap[language] || 'en-US';
+
+            // Explicitly request mic access to "wake up" the hardware
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                // If we get here, the mic is definitely accessible
+                stream.getTracks().forEach(track => track.stop()); // Stop immediately, we just wanted to check access
+                
+                recognitionRef.current.start();
+                setIsListening(true);
+            } catch (err: any) {
+                console.error('Mic check failed:', err);
+                if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+                    setVoiceError('No microphone detected. Is it plugged in?');
+                } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                    setVoiceError('Microphone access denied. \n\nTo fix this: \n1. Click the Lock icon in your browser bar and select "Allow". \n2. Check Windows Settings > Privacy > Microphone and turn ON "Let desktop apps access your microphone".');
+                } else {
+                    setVoiceError('Could not start microphone. Another app might be using it, or permissions are blocked.');
+                }
+                setIsListening(false);
+            }
+        } else {
+            alert('Speech recognition is not supported in this browser.');
+        }
+    };
+
+    const stopListening = () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
+            setIsListening(false);
+        }
+    };
+
+    const speakMessage = (message: ChatMessage) => {
+        if (speakingMessageId === message.id) {
+            stopSpeaking();
+            setSpeakingMessageId(null);
+        } else {
+            speak(message.content, message.id);
+        }
     };
 
     const handleNewChat = () => {
@@ -249,7 +511,7 @@ function ChatContent() {
         return elements;
     };
 
-    const sendMessage = async (question?: string) => {
+    const sendMessage = useCallback(async (question?: string) => {
         const messageContent = question || input;
         const hasImage = !!imageFile;
         
@@ -295,8 +557,9 @@ function ChatContent() {
             const data: ApiResponse = await response.json();
 
             if (data.success) {
+                const msgId = (Date.now() + 1).toString();
                 const assistantMessage: ChatMessage = {
-                    id: (Date.now() + 1).toString(),
+                    id: msgId,
                     type: 'assistant',
                     content: data.answer,
                     timestamp: new Date(data.timestamp)
@@ -304,6 +567,11 @@ function ChatContent() {
                 const finalMessages = [...currentMessages, assistantMessage];
                 setMessages(finalMessages);
                 saveConversation(finalMessages);
+                
+                // Speak the answer if autoSpeak is on
+                if (autoSpeak) {
+                    speak(data.answer, msgId);
+                }
             } else {
                 throw new Error('API returned unsuccessful');
             }
@@ -318,7 +586,13 @@ function ChatContent() {
         } finally {
             setLoading(false);
         }
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [input, imageFile, messages, language, autoSpeak, speak, saveConversation]);
+
+    // Keep sendMessageRef in sync
+    useEffect(() => {
+        sendMessageRef.current = sendMessage;
+    }, [sendMessage]);
 
     const theme = {
         bg: dark ? 'bg-[#1e1f2b]' : 'bg-white',
@@ -366,22 +640,48 @@ function ChatContent() {
                     window.location.href = `/graph?id=${a._id}`;
                 }}
                 onNew={handleNewChat}
+                externalIsOpen={sidebarOpen}
+                setExternalIsOpen={setSidebarOpen}
             />
 
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 <header className={`flex-shrink-0 border-b ${theme.headerBorder} ${theme.headerBg} z-20 transition-colors duration-300`}>
                     <div className="max-w-4xl mx-auto w-full px-4 h-14 flex items-center justify-between">
-                        <a href="/" className="flex items-center gap-2">
-                            <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-1 rounded-md">
-                                <Sprout className="w-4 h-4 text-white" />
-                            </div>
-                            <span className={`text-sm font-bold bg-gradient-to-r ${theme.brandText} bg-clip-text text-transparent`}>
-                                {t.title}
-                            </span>
-                        </a>
+                        <div className="flex items-center gap-2">
+                            <button 
+                                onClick={() => setSidebarOpen(true)}
+                                className={`p-2 rounded-lg md:hidden ${dark ? 'text-gray-400 hover:bg-[#2e2f42]' : 'text-gray-500 hover:bg-gray-100'}`}
+                            >
+                                <Menu className="w-5 h-5" />
+                            </button>
+                            <a href="/" className="flex items-center gap-2">
+                                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-1 rounded-md">
+                                    <Sprout className="w-4 h-4 text-white" />
+                                </div>
+                                <span className={`text-sm font-bold bg-gradient-to-r ${theme.brandText} bg-clip-text text-transparent hidden xs:inline-block`}>
+                                    {t.title}
+                                </span>
+                            </a>
+                        </div>
 
                         <div className="flex items-center gap-2">
+                            {isSpeaking && (
+                                <button
+                                    onClick={() => { stopSpeaking(); setSpeakingMessageId(null); }}
+                                    className={`px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1 transition-all ${dark ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-red-50 text-red-600 border border-red-100'}`}
+                                >
+                                    <VolumeX className="w-3 h-3" />
+                                    {t.stopSpeaking || 'Stop'}
+                                </button>
+                            )}
                             <LanguageSwitcher dark={dark} />
+                            <button
+                                onClick={() => setAutoSpeak(!autoSpeak)}
+                                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${theme.themeBtn} ${!autoSpeak ? 'opacity-50' : ''}`}
+                                title={autoSpeak ? (t.stopSpeaking || 'Mute') : (t.speak || 'Unmute')}
+                            >
+                                {autoSpeak ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                            </button>
                             <button
                                 onClick={toggleTheme}
                                 className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${theme.themeBtn}`}
@@ -462,8 +762,27 @@ function ChatContent() {
                                                     }`}>
                                                         {m.type === 'assistant' ? formatAnswer(m.content) : <p className="text-[13px] leading-relaxed">{m.content}</p>}
                                                     </div>
-                                                    <div className={`text-[10px] mt-1 opacity-50 px-1 ${m.type === 'user' ? 'text-right' : 'text-left'}`}>
-                                                        {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    <div className={`flex items-center gap-2 mt-1 px-1 ${m.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                                        <span className="text-[10px] opacity-50">
+                                                            {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </span>
+                                                        {m.type === 'assistant' && (
+                                                            <button
+                                                                onClick={() => speakMessage(m)}
+                                                                className={`p-1 rounded-md transition-all ${
+                                                                    speakingMessageId === m.id
+                                                                        ? dark ? 'bg-green-500/20 text-green-400' : 'bg-green-100 text-green-600'
+                                                                        : dark ? 'text-gray-500 hover:text-green-400 hover:bg-[#2e2f42]' : 'text-gray-400 hover:text-green-600 hover:bg-green-50'
+                                                                }`}
+                                                                title={speakingMessageId === m.id ? (t.stopSpeaking || 'Stop') : (t.speak || 'Listen')}
+                                                            >
+                                                                {speakingMessageId === m.id ? (
+                                                                    <AudioLines className="w-3.5 h-3.5 animate-pulse" />
+                                                                ) : (
+                                                                    <Volume2 className="w-3.5 h-3.5" />
+                                                                )}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
                                             </div>
@@ -505,6 +824,95 @@ function ChatContent() {
                         >
                             <ArrowDown className="w-5 h-5" />
                         </button>
+                    )}
+
+                    {/* Voice Listening Overlay */}
+                    {(isListening || voiceError) && (
+                        <div className="absolute inset-0 z-30 flex items-center justify-center p-4" style={{ background: dark ? 'rgba(30,31,43,0.92)' : 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)' }}>
+                            <div className="flex flex-col items-center gap-6 max-w-md w-full px-8 text-center">
+                                {/* Animated mic with rings or Error Icon */}
+                                <div className="relative">
+                                    {isListening && !voiceError ? (
+                                        <>
+                                            <div className="absolute inset-0 w-28 h-28 rounded-full bg-green-500/20 animate-ping" style={{ animationDuration: '2s' }} />
+                                            <div className="absolute inset-2 w-24 h-24 rounded-full bg-green-500/15 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.3s' }} />
+                                            <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-2xl shadow-green-500/30">
+                                                <Mic className="w-12 h-12 text-white" />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center shadow-2xl shadow-red-500/30">
+                                            <X className="w-12 h-12 text-white" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Waveform or Error Message */}
+                                {isListening && !voiceError ? (
+                                    <div className="flex items-center gap-1 h-10">
+                                        {[...Array(12)].map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className="w-1 rounded-full bg-gradient-to-t from-green-500 to-emerald-400"
+                                                style={{
+                                                    animation: 'voiceWave 1s ease-in-out infinite',
+                                                    animationDelay: `${i * 0.08}s`,
+                                                    height: '8px',
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className={`p-4 rounded-2xl ${dark ? 'bg-red-900/20 text-red-400' : 'bg-red-50 text-red-600'} border ${dark ? 'border-red-500/30' : 'border-red-200'} text-sm font-medium`}>
+                                        {voiceError}
+                                    </div>
+                                )}
+
+                                <div>
+                                    <p className={`text-lg font-bold mb-1 ${dark ? 'text-gray-100' : 'text-gray-800'}`}>
+                                        {isListening ? (t.listening || 'Listening...') : 'Oops! Something went wrong'}
+                                    </p>
+                                    {isListening && interimTranscript && (
+                                        <p className={`text-sm italic max-w-xs ${dark ? 'text-green-400' : 'text-green-600'}`}>
+                                            "{interimTranscript}"
+                                        </p>
+                                    )}
+                                    {isListening && !interimTranscript && (
+                                        <p className={`text-xs ${dark ? 'text-gray-500' : 'text-gray-400'}`}>
+                                            {t.speakNow || 'Speak now — your message will be sent automatically'}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="flex gap-3">
+                                    {voiceError ? (
+                                        <>
+                                            <button
+                                                onClick={() => { setVoiceError(null); startListening(); }}
+                                                className="px-6 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-green-500/20 hover:scale-105"
+                                            >
+                                                <RotateCcw className="w-4 h-4" />
+                                                Try Again
+                                            </button>
+                                            <button
+                                                onClick={() => setVoiceError(null)}
+                                                className={`px-6 py-2.5 rounded-xl border ${dark ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-600'} text-sm font-bold transition-all hover:bg-gray-100 dark:hover:bg-gray-800`}
+                                            >
+                                                Close
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <button
+                                            onClick={stopListening}
+                                            className="px-6 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-red-500/20 hover:scale-105 active:scale-95"
+                                        >
+                                            <MicOff className="w-4 h-4" />
+                                            {t.stopListening || 'Stop Listening'}
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     )}
 
                     <div className="absolute bottom-0 left-0 w-full p-4 pointer-events-none">
@@ -578,6 +986,22 @@ function ChatContent() {
                                     className={`flex-1 max-h-48 min-h-[44px] py-3 px-4 resize-none bg-transparent outline-none text-sm ${theme.inputText}`}
                                     placeholder={imagePreview ? (t.describeIssue || "Describe the issue or just send the image...") : (t.placeholder || "Message AgriSense AI...")}
                                 />
+                                
+                                {/* Big Voice Mic Button — prominent, easy to tap */}
+                                <button
+                                    type="button"
+                                    onClick={startListening}
+                                    disabled={loading}
+                                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
+                                        dark 
+                                            ? 'text-gray-400 hover:text-green-400 hover:bg-green-900/30' 
+                                            : 'text-gray-400 hover:text-green-600 hover:bg-green-50'
+                                    } disabled:opacity-30`}
+                                    title={t.startListening || 'Speak'}
+                                >
+                                    <Mic className="w-5 h-5" />
+                                </button>
+
                                 <button 
                                     type="submit"
                                     disabled={loading || (!input.trim() && !imageFile)}
