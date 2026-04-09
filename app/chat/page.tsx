@@ -141,7 +141,7 @@ function ChatContent() {
     }, [language, stopSpeaking]);
 
     // We need a ref to sendMessage since the recognition setup happens once
-    const sendMessageRef = useRef<(q?: string) => void>();
+    const sendMessageRef = useRef<(q?: string) => void>(undefined);
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
