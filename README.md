@@ -89,10 +89,10 @@ QDRANT_API_KEY=your_qdrant_api_key
 
 The AgriSense AI project was developed by a dedicated team of engineers focused on leveraging technology for sustainable agriculture:
 - Chinmaye HG
-- Hruthik Reddy
 - Chidurala Manikanta
-- Uma Shankar
 - Sarvolla Druva
+- Hruthik Reddy
+- Uma Shankar
 - Saaket Satvik
 
 ## Disclaimer
