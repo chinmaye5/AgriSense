@@ -70,8 +70,7 @@ function CropAnalyzerContent() {
         budget: '',
         soil_type: '',
         water_source: '',
-        season: '',
-        duration: ''
+        season: ''
     });
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<ApiResponse | null>(null);
@@ -143,8 +142,7 @@ function CropAnalyzerContent() {
             budget: '',
             soil_type: '',
             water_source: '',
-            season: '',
-            duration: ''
+            season: ''
         });
         setError('');
         setViewingHistoryTitle(null);
@@ -171,7 +169,6 @@ function CropAnalyzerContent() {
         if (!formData.soil_type) errors.soil_type = t.errorMessages.soil;
         if (!formData.water_source) errors.water_source = t.errorMessages.water;
         if (!formData.season) errors.season = t.errorMessages.season;
-        if (!formData.duration) errors.duration = t.errorMessages.duration;
 
         setValidationErrors(errors);
         return Object.keys(errors).length === 0;
@@ -198,7 +195,6 @@ function CropAnalyzerContent() {
                     soil_type: formData.soil_type,
                     water_source: formData.water_source,
                     season: formData.season,
-                    duration: formData.duration,
                     language: language
                 }),
             });
@@ -619,7 +615,7 @@ function CropAnalyzerContent() {
                         </div>
 
                         {/* Row 3 — Optional */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 gap-4">
                             <div className="space-y-1.5">
                                 <label className={`flex items-center gap-1.5 text-sm font-semibold ${d ? 'text-gray-300' : 'text-gray-700'}`}>
                                     <Leaf className="w-3.5 h-3.5 text-green-500" />
@@ -633,28 +629,6 @@ function CropAnalyzerContent() {
                                     placeholder={t.prevCropPlaceholder}
                                     className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all ${d ? 'bg-[#2a2b3d] border-[#3a3b50] text-gray-200 placeholder-gray-500' : 'bg-gray-50/50 hover:bg-white border-gray-200'}`}
                                 />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className={`flex items-center gap-1.5 text-sm font-semibold ${d ? 'text-gray-300' : 'text-gray-700'}`}>
-                                    <Moon className="w-3.5 h-3.5 text-purple-500" />
-                                    {t.duration} <span className="text-red-400">*</span>
-                                </label>
-                                <select
-                                    name="duration"
-                                    value={formData.duration}
-                                    onChange={handleChange}
-                                    className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all appearance-none cursor-pointer ${d ? 'bg-[#2a2b3d] border-[#3a3b50] text-gray-200' : 'bg-gray-50/50 hover:bg-white'} ${validationErrors.duration ? 'border-red-300 bg-red-50/30' : 'border-gray-200'
-                                        }`}
-                                >
-                                    <option value="">{t.selectDuration || "Select duration..."}</option>
-                                    {[...Array(12)].map((_, i) => (
-                                        <option key={i + 1} value={i + 1}>
-                                            {i + 1} {i === 0 ? "Month" : "Months"}
-                                        </option>
-                                    ))}
-                                </select>
-                                {validationErrors.duration && <p className="text-[11px] text-red-500 font-medium">{validationErrors.duration}</p>}
                             </div>
                         </div>
 

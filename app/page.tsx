@@ -194,15 +194,16 @@ export default function LandingPage() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center gap-6">
-                  <a
-                    href={`tel:${t.voiceSupport?.number || '+1 260-529-7403'}`}
-                    className="w-full sm:w-auto px-10 py-5 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-lg shadow-2xl shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all text-center flex items-center justify-center gap-3"
-                  >
-                    <Phone className="w-5 h-5 fill-current" />
-                    {t.voiceSupport?.callNow || 'Call Now'}
-                  </a>
+
                   <div className="flex flex-col items-center sm:items-start">
-                    <span className={`text-xl font-black ${d ? 'text-white' : 'text-gray-900'}`}>{t.voiceSupport?.number || '+1 260-529-7403'}</span>
+                    <a href="tel:+15755776955" className={`text-xl font-black hover:underline transition-colors ${d ? 'text-white hover:text-blue-400' : 'text-gray-900 hover:text-blue-600'}`}>+1 (575) 577-6955</a>
+                    <span className={`text-xs font-bold uppercase tracking-widest ${d ? 'text-gray-500' : 'text-gray-400'}`}>Toll-Free Support</span>
+                  </div>
+
+                  <div className={`hidden sm:block w-px h-10 ${d ? 'bg-gray-700' : 'bg-gray-200'}`}></div>
+
+                  <div className="flex flex-col items-center sm:items-start">
+                    <a href="tel:+17125305350" className={`text-xl font-black hover:underline transition-colors ${d ? 'text-white hover:text-blue-400' : 'text-gray-900 hover:text-blue-600'}`}>+1 (712) 530-5350</a>
                     <span className={`text-xs font-bold uppercase tracking-widest ${d ? 'text-gray-500' : 'text-gray-400'}`}>Toll-Free Support</span>
                   </div>
                 </div>
