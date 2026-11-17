@@ -307,7 +307,7 @@ export default function LandingPage() {
                 {[
                   'Chinmaye HG', 'Hruthik Reddy',
                   'Chidurala Manikanta', 'Uma Shankar',
-                  'Sarvolla Druva', 'Saaket Satvik'
+                  'Sarvolla Druva', 'Saaket Satwik'
                 ].map(name => (
                   <span key={name} className={`text-sm font-bold tracking-tight ${d ? 'text-gray-300' : 'text-gray-700'}`}>
                     {name}
